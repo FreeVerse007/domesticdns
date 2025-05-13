@@ -1,0 +1,85 @@
+{
+  "blockedDomains": [
+    {
+      "domain": "malware-example.com",
+      "reason": "恶意软件",
+      "blockType": "full",
+      "addedDate": "2023-07-15T14:30:00Z",
+      "lastHitDate": "2023-08-09T16:42:15Z",
+      "hitCount": 25
+    },
+    {
+      "domain": "phishing-attempt.com",
+      "reason": "钓鱼网站",
+      "blockType": "full",
+      "addedDate": "2023-07-20T09:15:00Z",
+      "lastHitDate": "2023-08-10T08:12:30Z",
+      "hitCount": 14
+    },
+    {
+      "domain": "tracking-analytics.com",
+      "reason": "跟踪分析",
+      "blockType": "full",
+      "addedDate": "2023-06-30T11:45:00Z",
+      "lastHitDate": "2023-08-10T11:32:18Z",
+      "hitCount": 120
+    },
+    {
+      "domain": "unwanted-ads.com",
+      "reason": "广告",
+      "blockType": "full",
+      "addedDate": "2023-07-05T16:20:00Z",
+      "lastHitDate": "2023-08-10T10:05:42Z",
+      "hitCount": 78
+    },
+    {
+      "domain": "adult-content.com",
+      "reason": "成人内容",
+      "blockType": "full",
+      "addedDate": "2023-08-01T13:10:00Z",
+      "lastHitDate": "2023-08-09T22:48:36Z",
+      "hitCount": 31
+    }
+  ],
+  "blockedPatterns": [
+    {
+      "pattern": ".*\\.malware-domain\\..*",
+      "reason": "恶意软件域名模式",
+      "blockType": "regex",
+      "addedDate": "2023-07-10T08:30:00Z",
+      "lastHitDate": "2023-08-08T19:22:10Z",
+      "hitCount": 8
+    },
+    {
+      "pattern": "ad-server-[0-9]+\\..*",
+      "reason": "广告服务器模式",
+      "blockType": "regex",
+      "addedDate": "2023-07-25T14:20:00Z",
+      "lastHitDate": "2023-08-10T07:15:33Z",
+      "hitCount": 45
+    }
+  ],
+  "whitelistedDomains": [
+    {
+      "domain": "legitimate-analytics.com",
+      "reason": "企业内部使用的分析工具",
+      "addedDate": "2023-07-18T10:45:00Z"
+    },
+    {
+      "domain": "needed-services.com",
+      "reason": "必要的业务服务",
+      "addedDate": "2023-08-02T15:30:00Z"
+    }
+  ],
+  "stats": {
+    "totalBlocked": 321,
+    "lastUpdated": "2023-08-10T12:30:00Z",
+    "topBlockedDomains": [
+      {"domain": "tracking-analytics.com", "count": 120},
+      {"domain": "unwanted-ads.com", "count": 78},
+      {"domain": "adult-content.com", "count": 31},
+      {"domain": "malware-example.com", "count": 25},
+      {"domain": "phishing-attempt.com", "count": 14}
+    ]
+  }
+} 

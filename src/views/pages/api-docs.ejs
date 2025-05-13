@@ -1,0 +1,378 @@
+<div class="api-docs">
+  <h1>DomesticDNS API 文档</h1>
+  <p>DomesticDNS提供了简单易用的API，用于DNS查询和管理。</p>
+  
+  <div class="card">
+    <h2>REST API</h2>
+    <p>DomesticDNS提供了标准的RESTful API，方便与各种应用和服务集成。</p>
+    
+    <div class="endpoint">
+      <h3>API入口</h3>
+      <div class="api-endpoint">
+        <span class="method-badge method-get">GET</span>
+        <code>/api</code>
+      </div>
+      
+      <p>返回API版本和可用端点的列表。</p>
+      
+      <h4>示例请求</h4>
+      <pre><code>GET /api</code></pre>
+      
+      <h4>示例响应</h4>
+      <pre><code>{
+  "status": "success",
+  "message": "DomesticDNS API服务",
+  "version": "1.0.0",
+  "endpoints": [
+    "/api/dns/lookup",
+    "/api/dns/resolve",
+    "/api/status"
+  ]
+}</code></pre>
+    </div>
+    
+    <div class="endpoint">
+      <h3>查询DNS (单一IP)</h3>
+      <div class="api-endpoint">
+        <span class="method-badge method-get">GET</span>
+        <code>/api/dns/lookup</code>
+      </div>
+      
+      <h4>参数</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>参数名</th>
+            <th>类型</th>
+            <th>必须</th>
+            <th>描述</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>domain</td>
+            <td>string</td>
+            <td>是</td>
+            <td>要查询的域名，例如：example.com</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <h4>示例请求</h4>
+      <pre><code>GET /api/dns/lookup?domain=example.com</code></pre>
+      
+      <h4>示例响应</h4>
+      <pre><code>{
+  "status": "success",
+  "domain": "example.com",
+  "ip": "93.184.216.34",
+  "family": "IPv4"
+}</code></pre>
+    </div>
+    
+    <div class="endpoint">
+      <h3>解析DNS (全部IP)</h3>
+      <div class="api-endpoint">
+        <span class="method-badge method-get">GET</span>
+        <code>/api/dns/resolve</code>
+      </div>
+      
+      <h4>参数</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>参数名</th>
+            <th>类型</th>
+            <th>必须</th>
+            <th>描述</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>domain</td>
+            <td>string</td>
+            <td>是</td>
+            <td>要查询的域名，例如：example.com</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <h4>示例请求</h4>
+      <pre><code>GET /api/dns/resolve?domain=example.com</code></pre>
+      
+      <h4>示例响应</h4>
+      <pre><code>{
+  "status": "success",
+  "domain": "example.com",
+  "ipv4": ["93.184.216.34"],
+  "ipv6": ["2606:2800:220:1:248:1893:25c8:1946"]
+}</code></pre>
+    </div>
+    
+    <div class="endpoint">
+      <h3>服务状态</h3>
+      <div class="api-endpoint">
+        <span class="method-badge method-get">GET</span>
+        <code>/api/status</code>
+      </div>
+      
+      <h4>示例请求</h4>
+      <pre><code>GET /api/status</code></pre>
+      
+      <h4>示例响应</h4>
+      <pre><code>{
+  "status": "success",
+  "timestamp": "2023-07-01T12:34:56.789Z",
+  "uptime": 3600,
+  "memory": {
+    "rss": 45678901,
+    "heapTotal": 23456789,
+    "heapUsed": 12345678,
+    "external": 1234567
+  }
+}</code></pre>
+    </div>
+  </div>
+  
+  <div class="card">
+    <h2>DNS查询 API</h2>
+    <p>使用此API可以查询特定域名的DNS记录。</p>
+    
+    <div class="endpoint">
+      <h3>查询端点</h3>
+      <code>GET /dns/lookup</code>
+      
+      <h4>参数</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>参数名</th>
+            <th>类型</th>
+            <th>必须</th>
+            <th>描述</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>domain</td>
+            <td>string</td>
+            <td>是</td>
+            <td>要查询的域名，例如：example.com</td>
+          </tr>
+          <tr>
+            <td>type</td>
+            <td>string</td>
+            <td>否</td>
+            <td>记录类型，支持：A, AAAA, MX, TXT, NS等。默认为A。</td>
+          </tr>
+          <tr>
+            <td>directTest</td>
+            <td>boolean</td>
+            <td>否</td>
+            <td>是否直接查询DNS服务器。默认为false。</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <h4>示例请求</h4>
+      <pre><code>GET /dns/lookup?domain=example.com&type=A</code></pre>
+      
+      <h4>示例响应</h4>
+      <pre><code>{
+  "success": true,
+  "data": {
+    "domain": "example.com",
+    "type": "A",
+    "answers": [
+      {
+        "name": "example.com",
+        "type": "A",
+        "ttl": 86400,
+        "data": "93.184.216.34"
+      }
+    ],
+    "responseTime": 25
+  }
+}</code></pre>
+    </div>
+  </div>
+  
+  <div class="card">
+    <h2>日志 API</h2>
+    <p>使用此API可以获取DNS查询日志。</p>
+    
+    <div class="endpoint">
+      <h3>获取日志</h3>
+      <code>GET /dns/logs</code>
+      
+      <h4>参数</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>参数名</th>
+            <th>类型</th>
+            <th>必须</th>
+            <th>描述</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>limit</td>
+            <td>number</td>
+            <td>否</td>
+            <td>要返回的记录数量，默认为20。</td>
+          </tr>
+          <tr>
+            <td>skip</td>
+            <td>number</td>
+            <td>否</td>
+            <td>跳过的记录数量，用于分页。</td>
+          </tr>
+          <tr>
+            <td>domain</td>
+            <td>string</td>
+            <td>否</td>
+            <td>按域名筛选。</td>
+          </tr>
+          <tr>
+            <td>type</td>
+            <td>string</td>
+            <td>否</td>
+            <td>按记录类型筛选。</td>
+          </tr>
+          <tr>
+            <td>clientIp</td>
+            <td>string</td>
+            <td>否</td>
+            <td>按客户端IP筛选。</td>
+          </tr>
+          <tr>
+            <td>status</td>
+            <td>boolean</td>
+            <td>否</td>
+            <td>按状态筛选（成功/失败）。</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <h4>示例请求</h4>
+      <pre><code>GET /dns/logs?limit=10&domain=example.com</code></pre>
+      
+      <h4>示例响应</h4>
+      <pre><code>{
+  "success": true,
+  "data": {
+    "logs": [
+      {
+        "timestamp": "2023-05-01T12:34:56.789Z",
+        "domain": "example.com",
+        "type": "A",
+        "clientIp": "127.0.0.1",
+        "protocol": "UDP",
+        "source": "API",
+        "responseTime": 15,
+        "success": true
+      },
+      // ...more logs
+    ],
+    "total": 45
+  }
+}</code></pre>
+    </div>
+    
+    <div class="endpoint">
+      <h3>获取统计信息</h3>
+      <code>GET /dns/logs/stats</code>
+      
+      <h4>示例请求</h4>
+      <pre><code>GET /dns/logs/stats</code></pre>
+      
+      <h4>示例响应</h4>
+      <pre><code>{
+  "success": true,
+  "data": {
+    "total": 1250,
+    "successCount": 1200,
+    "failCount": 50,
+    "successRate": 96,
+    "avgResponseTime": 28,
+    "typeStats": {
+      "A": { "total": 800, "success": 780, "fail": 20 },
+      "AAAA": { "total": 200, "success": 195, "fail": 5 },
+      "MX": { "total": 150, "success": 140, "fail": 10 },
+      "TXT": { "total": 100, "success": 85, "fail": 15 }
+    },
+    "topDomains": [
+      { "domain": "example.com", "count": 350 },
+      { "domain": "google.com", "count": 280 },
+      { "domain": "github.com", "count": 150 }
+    ]
+  }
+}</code></pre>
+    </div>
+  </div>
+  
+  <div class="card">
+    <h2>服务状态 API</h2>
+    <p>使用此API可以获取服务器状态信息。</p>
+    
+    <div class="endpoint">
+      <h3>获取状态</h3>
+      <div class="api-endpoint">
+        <span class="method-badge method-get">GET</span>
+        <code>/api/status</code>
+      </div>
+      
+      <h4>示例请求</h4>
+      <pre><code>GET /api/status</code></pre>
+      
+      <h4>示例响应</h4>
+      <pre><code>{
+  "status": "success",
+  "timestamp": "2023-07-01T12:34:56.789Z",
+  "uptime": 3600,
+  "memory": {
+    "rss": 45678901,
+    "heapTotal": 23456789,
+    "heapUsed": 12345678,
+    "external": 1234567
+  }
+}</code></pre>
+    </div>
+  </div>
+</div>
+
+<style>
+  .api-docs {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .endpoint {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+  }
+  
+  code {
+    background-color: #f1f1f1;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-family: monospace;
+  }
+  
+  pre {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow: auto;
+  }
+  
+  pre code {
+    background-color: transparent;
+    color: inherit;
+    padding: 0;
+  }
+</style> 

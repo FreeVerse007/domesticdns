@@ -1,0 +1,1439 @@
+<!-- DNS日志页面 - 现代设计 -->
+<link rel="stylesheet" href="/css/logs.css">
+<link rel="stylesheet" href="/css/logs-enhancement.css">
+<link rel="stylesheet" href="/css/log-icons.css">
+<link rel="stylesheet" href="/css/global-components.css">
+
+<div class="dns-test-wrapper">
+  <div class="dns-test-container">
+  <!-- 统计总览部分 -->
+    <div class="test-form card" id="statsSection">
+      <h2>DNS日志统计</h2>
+      
+      <div class="stats-container" id="statsContainer">
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>加载统计数据...</p>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="chart-section" style="flex: 1;">
+          <h3>记录类型分布</h3>
+          <div class="chart-wrapper">
+            <div id="typeChart" class="chart-content"></div>
+            </div>
+              </div>
+        
+        <div class="chart-section" style="flex: 1;">
+          <h3>热门域名</h3>
+          <div class="chart-wrapper">
+            <div id="domainChart" class="chart-content"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 筛选部分 -->
+    <div class="test-form card">
+      <div class="filter-header">
+      <h2>查询筛选</h2>
+        <div class="auto-refresh-container">
+          <label class="switch">
+            <input type="checkbox" id="autoRefresh">
+            <span class="slider"></span>
+          </label>
+          <span class="refresh-label">自动刷新</span>
+          <span id="refreshIndicator" class="refresh-countdown"></span>
+        </div>
+      </div>
+      
+      <div class="filter-content">
+      <div class="form-row">
+        <div class="form-group" style="flex: 1;">
+            <div class="input-group">
+          <label for="domain">域名</label>
+          <input type="text" id="domain" placeholder="example.com">
+            </div>
+      </div>
+        
+        <div class="form-group" style="flex: 1;">
+            <div class="input-group">
+          <label for="type">记录类型</label>
+          <select id="type">
+              <option value="">全部</option>
+              <option value="A">A</option>
+              <option value="AAAA">AAAA</option>
+              <option value="MX">MX</option>
+              <option value="TXT">TXT</option>
+              <option value="NS">NS</option>
+              <option value="PTR">PTR</option>
+            </select>
+            </div>
+          </div>
+        
+        <div class="form-group" style="flex: 1;">
+            <div class="input-group">
+          <label for="clientIp">客户端IP</label>
+          <input type="text" id="clientIp" placeholder="192.168.1.1">
+            </div>
+        </div>
+        
+        <div class="form-group" style="flex: 1;">
+            <div class="input-group">
+          <label for="status">状态</label>
+          <select id="status">
+              <option value="">全部</option>
+              <option value="true">成功</option>
+              <option value="false">失败</option>
+            </select>
+          </div>
+        </div>
+      
+          <div class="form-group button-group" style="flex-shrink: 0;">
+          <button id="filterBtn" class="primary-btn">筛选</button>
+          <button id="resetBtn" class="secondary-btn">重置</button>
+          <button id="clearLogsBtn" class="danger-btn">清空日志</button>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 日志表格部分 -->
+    <div class="test-results">
+      <h2>DNS请求记录</h2>
+      
+      <div class="table-responsive">
+        <table class="dns-queries-table" id="logsTable">
+          <thead>
+            <tr>
+              <th>时间</th>
+              <th>域名</th>
+              <th>记录类型</th>
+              <th>客户端IP</th>
+              <th>协议</th>
+              <th>来源</th>
+              <th>响应时间(ms)</th>
+              <th>状态</th>
+              <th>DNS查询详情</th>
+            </tr>
+          </thead>
+          <tbody id="logsBody">
+            <tr>
+              <td colspan="9" class="loading-cell">
+                <div class="loading-spinner"></div>
+                <p>加载DNS请求记录...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- 分页控件 -->
+      <div class="pagination-container" id="pagination"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DNS查询详情弹窗，使用与负载测试页面相同的样式 -->
+<div class="query-detail-info" id="queryDetailsModal" style="display:none;">
+  <div class="detail-header">
+    <span>DNS查询详情</span>
+    <button class="close-detail-btn" id="closeDetailBtn">&times;</button>
+  </div>
+  <div id="queryDetailsContent">
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>加载详情...</p>
+    </div>
+  </div>
+</div>
+
+<!-- 遮罩层 -->
+<div class="modal-backdrop" id="modalBackdrop" style="display:none;"></div>
+
+<style>
+  /* 强制覆盖统计卡片数值样式，使用黑色 */
+  .stat-card .stat-value {
+    color: #333333 !important;
+    background: none !important;
+    -webkit-text-fill-color: #333333 !important;
+    background-clip: unset !important;
+    -webkit-background-clip: unset !important;
+  }
+  
+  /* 整体布局调整 - 紧凑化 */
+  .dns-test-wrapper { padding: 0; }
+  .dns-test-container { padding: 0; }
+  
+  /* 卡片通用样式调整 */
+  .test-form.card {
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  
+  /* 统计部分 */
+  #statsSection {
+    margin-top: 0;
+    padding: 8px 10px;
+  }
+  
+  #statsSection h2 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+  }
+  
+  .stats-container {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  
+  /* 统计卡片样式 */
+  .stat-card {
+    padding: 10px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    border: none !important;
+  }
+  
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  /* 卡片颜色主题 */
+  .stat-card:nth-child(1) {
+    background: linear-gradient(to bottom, rgba(52, 152, 219, 0.05), white) !important;
+  }
+  .stat-card:nth-child(1)::before {
+    background: linear-gradient(to right, #3498db, #2980b9);
+  }
+  .stat-card:nth-child(1) h3 {
+    color: #2980b9;
+  }
+  
+  .stat-card:nth-child(2) {
+    background: linear-gradient(to bottom, rgba(46, 204, 113, 0.05), white) !important;
+  }
+  .stat-card:nth-child(2)::before {
+    background: linear-gradient(to right, #2ecc71, #27ae60);
+  }
+  .stat-card:nth-child(2) h3 {
+    color: #27ae60;
+  }
+  
+  .stat-card:nth-child(3) {
+    background: linear-gradient(to bottom, rgba(231, 76, 60, 0.05), white) !important;
+  }
+  .stat-card:nth-child(3)::before {
+    background: linear-gradient(to right, #e74c3c, #c0392b);
+  }
+  .stat-card:nth-child(3) h3 {
+    color: #c0392b;
+  }
+  
+  .stat-card:nth-child(4) {
+    background: linear-gradient(to bottom, rgba(155, 89, 182, 0.05), white) !important;
+  }
+  .stat-card:nth-child(4)::before {
+    background: linear-gradient(to right, #9b59b6, #8e44ad);
+  }
+  .stat-card:nth-child(4) h3 {
+    color: #8e44ad;
+  }
+  
+  .stat-card:nth-child(5) {
+    background: linear-gradient(to bottom, rgba(243, 156, 18, 0.05), white) !important;
+  }
+  .stat-card:nth-child(5)::before {
+    background: linear-gradient(to right, #f39c12, #d35400);
+  }
+  .stat-card:nth-child(5) h3 {
+    color: #d35400;
+  }
+  
+  /* 图表部分 */
+  .chart-section h3 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    font-size: 0.95rem;
+  }
+  
+  /* 筛选表单样式 */
+  .filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0 5px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    margin-bottom: 8px;
+  }
+  
+  .filter-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+  
+  .auto-refresh-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .input-group label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 0;
+  }
+  
+  .input-group input,
+  .input-group select {
+    padding: 5px 8px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    font-size: 0.85rem;
+  }
+  
+  .form-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    align-items: flex-end;
+  }
+  
+  .form-group {
+    margin-bottom: 0;
+  }
+  
+  .button-group {
+    display: flex;
+    gap: 3px;
+  }
+  
+  .button-group button {
+    padding: 5px 8px;
+    font-size: 0.75rem;
+  }
+  
+  /* 记录类型样式 */
+  .record-type {
+    display: inline-block;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: monospace;
+  }
+  
+  /* 状态样式 */
+  .status-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  
+  .status-badge.success {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #27ae60;
+  }
+  
+  .status-badge.error {
+    background-color: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+  }
+  
+  /* 表格部分 */
+  .test-results {
+    margin-top: 8px;
+  }
+  
+  .test-results h2 {
+    margin-top: 0;
+    margin-bottom: 6px;
+    font-size: 1.1rem;
+  }
+  
+  .dns-queries-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+  }
+  
+  .dns-queries-table thead {
+    background: linear-gradient(to right, #f8f9fa, #ffffff);
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .dns-queries-table th {
+    padding: 8px 6px;
+    text-align: left;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--dark);
+    white-space: nowrap;
+  }
+  
+  .dns-queries-table td {
+    padding: 6px;
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+    transition: var(--transition);
+  }
+  
+  .dns-queries-table tbody tr:hover {
+    background-color: rgba(52, 152, 219, 0.05);
+  }
+  
+  /* 分页部分 */
+  .pagination-container {
+    padding: 8px;
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid var(--border);
+  }
+  
+  /* 分页样式 */
+  .pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .pagination .page-item {
+    margin: 0 3px;
+  }
+  
+  .pagination .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    color: #3498db;
+    cursor: pointer;
+    font-size: 0.85rem;
+    text-align: center;
+    transition: all 0.2s ease;
+    padding: 0 12px;
+    user-select: none;
+    text-decoration: none;
+  }
+  
+  .pagination .page-link:hover {
+    background-color: #f5f5f5;
+    border-color: #3498db;
+  }
+  
+  .pagination .page-item.active .page-link {
+    background-color: #3498db;
+    border-color: #3498db;
+    color: white;
+  }
+  
+  .pagination .page-item.disabled .page-link {
+    color: #aaa;
+    pointer-events: none;
+    background-color: #f8f8f8;
+    border-color: #eee;
+  }
+  
+  /* 省略号样式 */
+  .pagination .page-item.disabled .page-link.ellipsis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  
+  /* 其他辅助样式 */
+  .no-data-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    color: #777;
+    text-align: center;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px dashed #ddd;
+    margin: 8px 0;
+  }
+  
+  .no-data-message i {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    color: #999;
+  }
+  
+  .no-data-message p {
+    margin: 0;
+    font-size: 0.85rem;
+  }
+  
+  /* 文本辅助样式 */
+  .text-success { color: #27ae60; }
+  .text-danger { color: #e74c3c; }
+  .text-primary { color: #3498db; }
+  .text-muted { color: #7f8c8d; }
+  .fw-medium { font-weight: 600; }
+  
+  /* DNS记录类型颜色样式 - 使用类选择器 */
+  .record-type.A {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  .record-type.AAAA {
+    background-color: #2980b9;
+    color: white;
+  }
+  
+  .record-type.MX {
+    background-color: #9b59b6;
+    color: white;
+  }
+  
+  .record-type.NS {
+    background-color: #2ecc71;
+    color: white;
+  }
+  
+  .record-type.TXT {
+    background-color: #f1c40f;
+    color: #333;
+  }
+  
+  .record-type.PTR {
+    background-color: #e67e22;
+    color: white;
+  }
+  
+  .record-type.CNAME {
+    background-color: #e74c3c;
+    color: white;
+  }
+  
+  .record-type.SOA {
+    background-color: #34495e;
+    color: white;
+  }
+  
+  .record-type.SRV {
+    background-color: #16a085;
+    color: white;
+  }
+  
+  .record-type.CAA {
+    background-color: #8e44ad;
+    color: white;
+  }
+  
+  /* 默认记录类型样式 */
+  .record-type {
+    background-color: #7f8c8d;
+    color: white;
+  }
+  
+  /* 弹窗样式修改 - 与DNS测试页面保持一致 */
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    cursor: pointer;
+  }
+  
+  .query-detail-info {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 15px;
+    width: 500px;
+    max-width: calc(100vw - 40px);
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 1001;
+  }
+  
+  .detail-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .close-detail-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: #777;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .close-detail-btn:hover {
+    color: #333;
+  }
+  
+  .detail-item {
+    margin-bottom: 8px;
+    display: flex;
+  }
+  
+  .detail-label {
+    font-weight: 500;
+    color: #555;
+    min-width: 100px;
+    margin-right: 10px;
+  }
+  
+  .detail-value {
+    flex: 1;
+  }
+  
+  .detail-value pre {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 0.85rem;
+    margin: 5px 0;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  
+  .detail-value.error {
+    color: #e74c3c;
+  }
+  
+  .detail-value.success {
+    color: #2ecc71;
+  }
+
+  .test-results h2 {
+    margin-top: 0;
+    margin-bottom: 6px;
+    font-size: 1.1rem;
+  }
+</style>
+
+<script>
+  // 全局状态
+  const state = {
+    logs: [],
+    total: 0,
+    currentPage: 1,
+    limit: 20,
+    filters: {},
+    stats: null,
+    autoRefreshInterval: null,
+    autoRefreshSeconds: 10,
+    autoRefreshCountdown: 10
+  };
+  
+  // DOM元素
+  const elements = {
+    statsContainer: document.getElementById('statsContainer'),
+    logsBody: document.getElementById('logsBody'),
+    pagination: document.getElementById('pagination'),
+    filterBtn: document.getElementById('filterBtn'),
+    resetBtn: document.getElementById('resetBtn'),
+    clearLogsBtn: document.getElementById('clearLogsBtn'),
+    domainInput: document.getElementById('domain'),
+    typeSelect: document.getElementById('type'),
+    clientIpInput: document.getElementById('clientIp'),
+    statusSelect: document.getElementById('status'),
+    autoRefresh: document.getElementById('autoRefresh'),
+    refreshIndicator: document.getElementById('refreshIndicator'),
+    typeChart: document.getElementById('typeChart'),
+    domainChart: document.getElementById('domainChart'),
+    queryDetailsModal: document.getElementById('queryDetailsModal'),
+    queryDetailsContent: document.getElementById('queryDetailsContent'),
+    modalBackdrop: document.getElementById('modalBackdrop'),
+    closeDetailBtn: document.getElementById('closeDetailBtn')
+  };
+  
+  // 事件监听
+  elements.filterBtn.addEventListener('click', applyFilters);
+  elements.resetBtn.addEventListener('click', resetFilters);
+  elements.clearLogsBtn.addEventListener('click', clearLogs);
+  elements.autoRefresh.addEventListener('change', toggleAutoRefresh);
+  elements.modalBackdrop.addEventListener('click', hideQueryDetails);
+  elements.closeDetailBtn.addEventListener('click', hideQueryDetails);
+  elements.queryDetailsModal.addEventListener('click', function(e) {
+    // 阻止事件冒泡到背景
+    e.stopPropagation();
+  });
+  
+  // 初始化
+  init();
+  
+  // 渲染默认的统计卡片（骨架屏效果）
+  renderDefaultStats();
+  
+  // 渲染默认的统计卡片
+  function renderDefaultStats() {
+    elements.statsContainer.innerHTML = `
+      <div class="stat-card">
+        <h3>总请求数</h3>
+        <div class="stat-value loading-placeholder" style="color: #333333 !important; background: none !important; -webkit-text-fill-color: #333333 !important;">0</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>成功请求</h3>
+        <div class="stat-value loading-placeholder" style="color: #333333 !important; background: none !important; -webkit-text-fill-color: #333333 !important;">0</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>失败请求</h3>
+        <div class="stat-value loading-placeholder" style="color: #333333 !important; background: none !important; -webkit-text-fill-color: #333333 !important;">0</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>成功率</h3>
+        <div class="stat-value loading-placeholder" style="color: #333333 !important; background: none !important; -webkit-text-fill-color: #333333 !important;">0%</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>平均响应时间</h3>
+        <div class="stat-value loading-placeholder" style="color: #333333 !important; background: none !important; -webkit-text-fill-color: #333333 !important;">0ms</div>
+      </div>
+    `;
+  }
+  
+  // 主初始化函数
+  async function init() {
+    await Promise.all([
+      fetchLogs(),
+      fetchStats()
+    ]);
+  }
+  
+  // 获取DNS日志
+  async function fetchLogs() {
+    try {
+      const params = new URLSearchParams({
+        limit: state.limit,
+        skip: (state.currentPage - 1) * state.limit,
+        ...state.filters
+      });
+      
+      const response = await fetch(`/dns/logs?${params.toString()}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        state.logs = data.data.logs;
+        state.total = data.data.total;
+        renderLogs();
+        renderPagination();
+      }
+    } catch (error) {
+      console.error('获取DNS日志失败:', error);
+      elements.logsBody.innerHTML = `
+        <tr>
+          <td colspan="9" class="loading-cell">
+            <div class="error-message">
+              <i class="icon icon-exclamation-circle"></i>
+            <p>获取DNS日志失败: ${error.message}</p>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+  }
+  
+  // 获取统计数据
+  async function fetchStats() {
+    try {
+      console.log('开始获取统计数据...');
+      const response = await fetch('/dns/logs/stats');
+      
+      // 检查响应状态
+      if (!response.ok) {
+        throw new Error(`HTTP错误 ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      console.log('获取到统计数据:', data);
+      
+      if (data.success) {
+        if (!data.data) {
+          throw new Error('服务器返回的数据为空');
+        }
+        
+        // 保存到状态并渲染
+        state.stats = data.data;
+        
+        // 确保所有需要的统计数据都存在
+        if (!state.stats.total && state.stats.total !== 0) state.stats.total = 0;
+        if (!state.stats.successCount && state.stats.successCount !== 0) state.stats.successCount = 0;
+        if (!state.stats.failCount && state.stats.failCount !== 0) state.stats.failCount = 0;
+        if (!state.stats.successRate && state.stats.successRate !== 0) state.stats.successRate = 0;
+        if (!state.stats.avgResponseTime && state.stats.avgResponseTime !== 0) state.stats.avgResponseTime = 0;
+        
+        // 渲染统计和图表
+        console.log('准备渲染统计数据:', state.stats);
+        renderStats();
+        renderCharts();
+      } else {
+        console.error('获取统计数据失败:', data.message);
+        showStatsError('获取统计数据失败: ' + data.message);
+      }
+    } catch (error) {
+      console.error('获取统计数据失败:', error);
+      showStatsError('获取统计数据失败: ' + error.message);
+    }
+  }
+  
+  // 渲染日志表格
+  function renderLogs() {
+    if (state.logs.length === 0) {
+      elements.logsBody.innerHTML = `
+        <tr>
+          <td colspan="9" class="loading-cell">
+            <div class="no-data-message">
+              <i class="icon icon-info-circle"></i>
+              <p>没有找到DNS请求记录</p>
+            </div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+    
+    console.log('渲染日志数据，记录数:', state.logs.length);
+    
+    elements.logsBody.innerHTML = state.logs.map(log => {
+      // 确保ID存在，并转换为字符串
+      const logId = log.id || log._id || '';
+      const recordType = log.type || '-';
+      
+      return `
+      <tr>
+        <td><small class="text-muted">${formatDate(log.timestamp)}</small></td>
+        <td class="fw-medium">${log.domain || log.ip || '-'}</td>
+        <td><span class="record-type ${recordType}">${recordType}</span></td>
+        <td><code>${log.clientIp || '-'}</code></td>
+        <td>${log.protocol || 'API'}</td>
+        <td>${log.source || '-'}</td>
+        <td>${log.responseTime ? `<span class="text-primary">${log.responseTime}ms</span>` : '-'}</td>
+        <td>${log.success 
+          ? '<span class="status-badge success">成功</span>' 
+          : '<span class="status-badge error">失败</span>'}</td>
+        <td>
+          <button type="button" class="detail-btn" data-id="${logId}" title="查看详情">
+            查看详情
+          </button>
+        </td>
+      </tr>
+    `}).join('');
+    
+    // 为查看详情按钮添加事件监听器
+    document.querySelectorAll('.detail-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const logId = this.getAttribute('data-id');
+        console.log('点击查看详情按钮, ID:', logId);
+        showQueryDetails(logId);
+      });
+    });
+  }
+  
+  // 渲染分页控件
+  function renderPagination() {
+    const totalPages = Math.ceil(state.total / state.limit);
+    
+    if (totalPages <= 1) {
+      elements.pagination.innerHTML = '';
+      return;
+    }
+    
+    let paginationHtml = '<ul class="pagination">';
+    
+    // 上一页按钮
+    paginationHtml += `
+      <li class="page-item ${state.currentPage === 1 ? 'disabled' : ''}">
+        <button type="button" class="page-link" data-page="${state.currentPage - 1}" aria-label="上一页" ${state.currentPage === 1 ? 'disabled' : ''}>
+          <span aria-hidden="true">&laquo;</span>
+        </button>
+      </li>
+    `;
+    
+    // 页码按钮
+    const startPage = Math.max(1, state.currentPage - 2);
+    const endPage = Math.min(totalPages, state.currentPage + 2);
+    
+    // 显示第一页
+    if (startPage > 1) {
+      paginationHtml += `
+        <li class="page-item">
+          <button type="button" class="page-link" data-page="1">1</button>
+        </li>
+      `;
+      
+      // 如果不是紧挨着第一页，显示省略号
+      if (startPage > 2) {
+        paginationHtml += `
+          <li class="page-item disabled">
+            <span class="page-link">...</span>
+          </li>
+        `;
+      }
+    }
+    
+    // 渲染中间的页码
+    for (let i = startPage; i <= endPage; i++) {
+      paginationHtml += `
+        <li class="page-item ${i === state.currentPage ? 'active' : ''}">
+          <button type="button" class="page-link" data-page="${i}">${i}</button>
+        </li>
+      `;
+    }
+    
+    // 显示最后一页
+    if (endPage < totalPages) {
+      // 如果不是紧挨着最后一页，显示省略号
+      if (endPage < totalPages - 1) {
+        paginationHtml += `
+          <li class="page-item disabled">
+            <span class="page-link">...</span>
+          </li>
+        `;
+      }
+      
+      paginationHtml += `
+        <li class="page-item">
+          <button type="button" class="page-link" data-page="${totalPages}">${totalPages}</button>
+        </li>
+      `;
+    }
+    
+    // 下一页按钮
+    paginationHtml += `
+      <li class="page-item ${state.currentPage === totalPages ? 'disabled' : ''}">
+        <button type="button" class="page-link" data-page="${state.currentPage + 1}" aria-label="下一页" ${state.currentPage === totalPages ? 'disabled' : ''}>
+          <span aria-hidden="true">&raquo;</span>
+        </button>
+      </li>
+    `;
+    
+    paginationHtml += '</ul>';
+    elements.pagination.innerHTML = paginationHtml;
+    
+    // 为分页按钮添加事件监听器
+    document.querySelectorAll('.pagination .page-link:not([disabled])').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const page = parseInt(this.getAttribute('data-page'), 10);
+        if (!isNaN(page) && page !== state.currentPage) {
+          changePage(page);
+        }
+      });
+    });
+  }
+  
+  // 渲染统计信息
+  function renderStats() {
+    console.log('开始渲染统计信息, 状态数据:', state.stats);
+    
+    if (!state.stats) {
+      console.error('统计数据为空，无法渲染');
+      showStatsError('统计数据为空');
+      return;
+    }
+    
+    // 确保数据存在，否则使用默认值
+    const total = state.stats.total || 0;
+    const successCount = state.stats.successCount || 0;
+    const failCount = state.stats.failCount || 0;
+    const successRate = state.stats.successRate || 0;
+    const avgResponseTime = state.stats.avgResponseTime || 0;
+    
+    console.log('准备使用如下数据渲染统计卡片:',
+      '总数:', total,
+      '成功:', successCount,
+      '失败:', failCount,
+      '成功率:', successRate,
+      '平均响应时间:', avgResponseTime
+    );
+    
+    elements.statsContainer.innerHTML = `
+      <div class="stat-card">
+        <h3>总请求数</h3>
+        <div class="stat-value" style="color: #333333 !important; background: none !important; -webkit-text-fill-color: #333333 !important;">${total}</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>成功请求</h3>
+        <div class="stat-value" style="color: #333333 !important; background: none !important; -webkit-text-fill-color: #333333 !important;">${successCount}</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>失败请求</h3>
+        <div class="stat-value" style="color: #333333 !important; background: none !important; -webkit-text-fill-color: #333333 !important;">${failCount}</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>成功率</h3>
+        <div class="stat-value" style="color: #333333 !important; background: none !important; -webkit-text-fill-color: #333333 !important;">${successRate}%</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>平均响应时间</h3>
+        <div class="stat-value" style="color: #333333 !important; background: none !important; -webkit-text-fill-color: #333333 !important;">${avgResponseTime}ms</div>
+      </div>
+    `;
+  }
+  
+  // 渲染图表
+  function renderCharts() {
+    console.log('开始渲染图表, 状态数据:', state.stats);
+    
+    if (!state.stats) {
+      console.error('统计数据为空，无法渲染图表');
+      elements.typeChart.innerHTML = '<div class="no-data-message">无法获取记录类型统计数据</div>';
+      elements.domainChart.innerHTML = '<div class="no-data-message">无法获取热门域名统计数据</div>';
+      return;
+    }
+    
+    // 按记录类型统计图表
+    const { typeStats } = state.stats;
+    
+    if (!typeStats || Object.keys(typeStats).length === 0) {
+      elements.typeChart.innerHTML = '<div class="no-data-message">暂无记录类型统计数据</div>';
+    } else {
+    let typeChartHtml = `
+      <table class="summary-table">
+            <thead>
+              <tr>
+            <th>类型</th>
+            <th>总数</th>
+            <th>成功</th>
+            <th>失败</th>
+            <th>成功率</th>
+              </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    Object.entries(typeStats).forEach(([type, stats]) => {
+      const successRate = stats.total > 0 ? Math.round((stats.success / stats.total) * 100) : 0;
+      typeChartHtml += `
+        <tr>
+          <td><span class="record-type">${type}</span></td>
+          <td>${stats.total}</td>
+          <td class="text-success">${stats.success}</td>
+          <td class="text-danger">${stats.fail}</td>
+          <td>
+            <div class="progress-bar" style="width: 80px; height: 6px;">
+              <div class="progress-fill" style="width: ${successRate}%; background-color: ${successRate >= 80 ? 'var(--success)' : successRate >= 50 ? 'var(--warning)' : 'var(--danger)'}"></div>
+            </div>
+            <small>${successRate}%</small>
+          </td>
+        </tr>
+      `;
+    });
+    
+    typeChartHtml += '</tbody></table>';
+    elements.typeChart.innerHTML = typeChartHtml;
+    }
+    
+    // 热门域名图表
+    const { topDomains } = state.stats;
+    
+    if (!topDomains || topDomains.length === 0) {
+      elements.domainChart.innerHTML = '<div class="no-data-message">暂无热门域名统计数据</div>';
+    } else {
+    let domainChartHtml = `
+      <table class="summary-table">
+            <thead>
+              <tr>
+            <th>域名</th>
+            <th>查询次数</th>
+            <th>占比</th>
+              </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    const totalQueries = topDomains.reduce((sum, { count }) => sum + count, 0);
+    
+    topDomains.forEach(({ domain, count }) => {
+      const percentage = totalQueries > 0 ? Math.round((count / totalQueries) * 100) : 0;
+      domainChartHtml += `
+        <tr>
+          <td class="text-primary fw-medium">${domain}</td>
+          <td>${count}</td>
+          <td>
+            <div class="progress-bar" style="width: 80px; height: 6px;">
+              <div class="progress-fill" style="width: ${percentage}%; background-color: var(--primary-color)"></div>
+            </div>
+            <small>${percentage}%</small>
+          </td>
+        </tr>
+      `;
+    });
+    
+    domainChartHtml += '</tbody></table>';
+    elements.domainChart.innerHTML = domainChartHtml;
+    }
+  }
+  
+  // 应用筛选条件
+  function applyFilters() {
+    state.filters = {};
+    
+    const domain = elements.domainInput.value.trim();
+    const type = elements.typeSelect.value;
+    const clientIp = elements.clientIpInput.value.trim();
+    const status = elements.statusSelect.value;
+    
+    if (domain) state.filters.domain = domain;
+    if (type) state.filters.type = type;
+    if (clientIp) state.filters.clientIp = clientIp;
+    if (status !== '') state.filters.status = status;
+    
+    state.currentPage = 1;
+    fetchLogs();
+  }
+  
+  // 重置筛选条件
+  function resetFilters() {
+    elements.domainInput.value = '';
+    elements.typeSelect.value = '';
+    elements.clientIpInput.value = '';
+    elements.statusSelect.value = '';
+    
+    state.filters = {};
+    state.currentPage = 1;
+    fetchLogs();
+  }
+  
+  // 清空所有日志
+  async function clearLogs() {
+    if (!confirm('确定要清空所有DNS日志吗？此操作不可恢复。')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch('/dns/logs', {
+        method: 'DELETE'
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('DNS日志已清空');
+        state.currentPage = 1;
+        init();
+      } else {
+        alert(`清空日志失败: ${data.message}`);
+      }
+    } catch (error) {
+      alert(`清空日志失败: ${error.message}`);
+    }
+  }
+  
+  // 切换自动刷新
+  function toggleAutoRefresh() {
+    if (elements.autoRefresh.checked) {
+      state.autoRefreshCountdown = state.autoRefreshSeconds;
+      updateRefreshIndicator();
+      
+      state.autoRefreshInterval = setInterval(() => {
+        state.autoRefreshCountdown--;
+        
+        if (state.autoRefreshCountdown <= 0) {
+          state.autoRefreshCountdown = state.autoRefreshSeconds;
+          init();
+        }
+        
+        updateRefreshIndicator();
+      }, 1000);
+    } else {
+      clearInterval(state.autoRefreshInterval);
+      elements.refreshIndicator.textContent = '';
+    }
+  }
+  
+  // 更新刷新指示器
+  function updateRefreshIndicator() {
+    elements.refreshIndicator.textContent = `${state.autoRefreshCountdown}秒后刷新`;
+  }
+  
+  // 切换页码
+  function changePage(page) {
+    if (page < 1) page = 1;
+    const totalPages = Math.ceil(state.total / state.limit);
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    fetchLogs();
+    
+    // 滚动到表格顶部
+    document.querySelector('.dns-queries-table').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  
+  // 格式化日期
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  }
+  
+  // 格式化DNS响应数据
+  function formatDnsResponse(response) {
+    try {
+      if (!response) return '无数据';
+      
+      console.log('格式化DNS响应数据:', typeof response, response);
+      
+      // 如果响应已经是字符串，尝试解析它
+      if (typeof response === 'string') {
+        try {
+          response = JSON.parse(response);
+          console.log('解析后的响应:', response);
+        } catch (e) {
+          // 如果解析失败，就返回原始字符串
+          console.log('解析失败:', e);
+          return response;
+        }
+      }
+      
+      // 如果有results数组，直接格式化它
+      if (response.results) {
+        console.log('找到results数组:', response.results);
+        return JSON.stringify(response.results, null, 2);
+      }
+      
+      // 如果是标准的API响应格式，提取数据部分
+      if (response.success && response.data) {
+        console.log('找到标准API响应格式');
+        return JSON.stringify(response.data, null, 2);
+      }
+      
+      // 其他情况，直接格式化整个响应
+      console.log('使用完整响应格式化');
+      return JSON.stringify(response, null, 2);
+    } catch (error) {
+      console.error('格式化DNS响应数据失败:', error);
+      return JSON.stringify(response || {}, null, 2);
+    }
+  }
+  
+  // 显示DNS查询详情 - 使用已加载的日志数据而不是重新请求
+  function showQueryDetails(logId) {
+    // 如果没有传入ID，则直接返回
+    if (!logId) {
+      console.error('未指定查询ID');
+      return;
+    }
+    
+    // 显示遮罩层和弹窗
+    elements.modalBackdrop.style.display = 'block';
+    elements.queryDetailsModal.style.display = 'block';
+    
+    // 转换ID为字符串和数字两种形式，以便进行比较
+    const logIdStr = String(logId);
+    const logIdNum = parseInt(logId, 10);
+    
+    console.log('查找日志记录:', logId);
+    console.log('当前日志列表长度:', state.logs.length);
+    
+    // 尝试从当前加载的日志数据中查找指定ID的日志
+    const log = state.logs.find(l => 
+      String(l.id) === logIdStr || 
+      l.id === logIdNum || 
+      l._id === logId
+    );
+    
+    if (!log) {
+      // 如果在当前数据中找不到，显示错误信息
+      console.error('找不到日志记录:', logId);
+      console.log('当前日志ID列表:', state.logs.map(l => l.id));
+      
+      elements.queryDetailsContent.innerHTML = `
+        <div class="detail-item">
+          <div class="detail-label">错误</div>
+          <div class="detail-value error">找不到ID为 ${logId} 的查询记录</div>
+          <div class="detail-value">
+            <p>可能的原因:</p>
+            <ul>
+              <li>日志记录已被清除</li>
+              <li>日志ID格式不匹配</li>
+              <li>当前页面未加载该记录</li>
+            </ul>
+            <p>请尝试刷新页面或重新筛选日志。</p>
+          </div>
+        </div>
+      `;
+      return;
+    }
+    
+    // 获取记录类型，并确保有默认值
+    const recordType = log.type || '-';
+    
+    // 准备响应数据
+    let responseData = '';
+    if (log.response) {
+      responseData = formatDnsResponse(log.response);
+    } else if (log.results) {
+      const formattedResults = {
+        success: true,
+        message: "操作成功",
+        data: log.results
+      };
+      responseData = JSON.stringify(formattedResults, null, 2);
+    }
+    
+    // 构建详情内容 - 模仿dns-test.ejs的样式
+    let detailsHtml = `
+      <div class="detail-item">
+        <div class="detail-label">域名:</div>
+        <div class="detail-value">${log.domain || log.ip || '未指定'}</div>
+      </div>
+      
+      <div class="detail-item">
+        <div class="detail-label">记录类型:</div>
+        <div class="detail-value"><span class="record-type ${recordType}">${recordType}</span></div>
+      </div>
+      
+      <div class="detail-item">
+        <div class="detail-label">响应时间:</div>
+        <div class="detail-value">${log.responseTime || 0} ms</div>
+      </div>
+      
+      <div class="detail-item">
+        <div class="detail-label">状态:</div>
+        <div class="detail-value ${log.success ? 'success' : 'error'}">${log.success ? '成功' : '失败'}</div>
+      </div>
+    `;
+    
+    // 添加响应数据
+    if (responseData) {
+      const dataHeight = Math.min(responseData.split('\n').length * 20, 300);
+      detailsHtml += `
+        <div class="detail-item response-data">
+          <div class="detail-label">响应数据:</div>
+          <div class="detail-value json-data">
+            <pre style="height: ${dataHeight}px; overflow-y: auto; margin: 0;">${responseData}</pre>
+          </div>
+        </div>
+      `;
+    }
+    
+    // 如果有错误信息，添加到详情中
+    if (log.error) {
+      detailsHtml += `
+        <div class="detail-item">
+          <div class="detail-label">错误信息:</div>
+          <div class="detail-value error">${log.error}</div>
+        </div>
+      `;
+    }
+    
+    elements.queryDetailsContent.innerHTML = detailsHtml;
+    
+    // 确保json-data可以正确显示
+    document.querySelectorAll('.json-data pre').forEach(el => {
+      el.style.whiteSpace = 'pre-wrap';
+      el.style.overflowX = 'auto';
+    });
+    
+    // 调整弹窗高度，防止出现双重滚动条
+    setTimeout(() => {
+      const modalHeight = elements.queryDetailsModal.offsetHeight;
+      const windowHeight = window.innerHeight * 0.8; // 屏幕高度的80%
+      
+      if (modalHeight > windowHeight) {
+        elements.queryDetailsModal.style.height = windowHeight + 'px';
+      } else {
+        elements.queryDetailsModal.style.height = 'auto';
+      }
+    }, 10);
+  }
+  
+  // 隐藏DNS查询详情
+  function hideQueryDetails() {
+    elements.modalBackdrop.style.display = 'none';
+    elements.queryDetailsModal.style.display = 'none';
+  }
+  
+  // 键盘事件监听，按ESC关闭弹窗
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && elements.queryDetailsModal.style.display === 'block') {
+      hideQueryDetails();
+    }
+  });
+  
+  // 暴露给全局作用域，以便HTML中的onclick调用
+  window.changePage = changePage;
+  window.showQueryDetails = showQueryDetails;
+  window.hideQueryDetails = hideQueryDetails;
+  
+  // 显示统计错误信息
+  function showStatsError(message) {
+    elements.statsContainer.innerHTML = `
+      <div class="error-message" style="width:100%; text-align:center; padding:20px;">
+        <i class="icon icon-exclamation-circle"></i>
+        <p>${message}</p>
+      </div>
+    `;
+  }
+</script> 

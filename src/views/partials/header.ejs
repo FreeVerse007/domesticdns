@@ -1,0 +1,57 @@
+<header>
+  <div class="header-container">
+    <div class="logo">
+      <a href="/" class="logo-link">
+        <h1>DomesticDNS</h1>
+        <p class="tagline">基于Koa2的DNS解析服务</p>
+      </a>
+    </div>
+    <%- include('./navigation') %>
+  </div>
+</header>
+
+<style>
+  header {
+    padding: 0.25rem 0;
+  }
+  
+  .header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+  }
+  
+  .logo {
+    transform: scale(0.8);
+    transform-origin: left center;
+  }
+  
+  .logo h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+  
+  .tagline {
+    margin: 0;
+    font-size: 0.75rem;
+  }
+  
+  .logo-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: all 0.3s ease;
+  }
+  
+  .logo-link:hover h1 {
+    color: var(--primary-color);
+  }
+  
+  @media (max-width: 768px) {
+    .header-container {
+      padding: 0.25rem 1rem;
+    }
+  }
+</style> 

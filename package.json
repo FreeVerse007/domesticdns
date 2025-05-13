@@ -1,0 +1,29 @@
+{
+  "name": "domesticdns",
+  "version": "1.0.0",
+  "description": "基于Koa2的DNS解析器项目",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "dns": "node src/server.js",
+    "dns:dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "@koa/router": "^13.1.0",
+    "dns2": "^2.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "koa": "^2.14.2",
+    "koa-bodyparser": "^4.4.1",
+    "koa-ejs": "^4.3.0",
+    "koa-logger": "^3.2.1",
+    "koa-router": "^12.0.0",
+    "koa-static": "^5.0.0",
+    "native-dns": "^0.7.0",
+    "node-dns": "^0.1.0",
+    "undici": "^7.8.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

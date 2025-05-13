@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - DomesticDNS</title>
+  <link rel="stylesheet" href="/css/icons.css">
+  <link rel="stylesheet" href="/css/fontawesome/fontawesome.css">
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/global-components.css">
+  <%- stylesheets %>
+</head>
+<body>
+  <!-- 页头 -->
+  <%- include('../partials/header') %>
+  
+  <!-- 主要内容 -->
+  <div class="container">
+    <%- body %>
+  </div>
+  
+  <!-- 页脚 -->
+  <%- include('../partials/footer') %>
+  
+  <!-- 脚本 -->
+  <script src="/js/jquery.min.js"></script>
+  <%- scripts %>
+</body>
+</html> 

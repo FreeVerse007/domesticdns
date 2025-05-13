@@ -1,0 +1,82 @@
+<style>
+  .form-group input[type="text"],
+  .form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+</style>
+
+<div class="main-content">
+  <h1>DomesticDNS</h1>
+  <p>基于Koa2构建的DNS解析服务</p>
+  
+  <div class="dns-form card">
+    <h2>DNS查询</h2>
+    <div class="form-group">
+      <label for="domain">域名</label>
+      <input type="text" id="domain" placeholder="输入域名，如 example.com">
+    </div>
+    <div class="form-group">
+      <label for="record-type">记录类型</label>
+      <select id="record-type">
+        <option value="A">A (IPv4地址)</option>
+        <option value="AAAA">AAAA (IPv6地址)</option>
+        <option value="MX">MX (邮件服务器)</option>
+        <option value="TXT">TXT (文本记录)</option>
+        <option value="NS">NS (域名服务器)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="protocol">协议类型</label>
+      <select id="protocol">
+        <option value="standard">Standard (标准DNS)</option>
+        <option value="dot">DoT (DNS over TLS)</option>
+        <option value="doh">DoH (DNS over HTTPS)</option>
+        <option value="doq">DoQ (DNS over QUIC)</option>
+        <option value="custom">Custom (自定义)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="dns-server">DNS服务器</label>
+      <input type="text" id="dns-server" placeholder="输入DNS服务器IP，如 8.8.8.8" value="8.8.8.8">
+    </div>
+    <button id="lookup-btn">查询</button>
+  </div>
+  
+  <div id="result" class="card hidden">
+    <h3>查询结果</h3>
+    <pre id="result-data"></pre>
+  </div>
+  
+  
+</div>
+
+<script>
+  document.getElementById('lookup-btn').addEventListener('click', async () => {
+    const domain = document.getElementById('domain').value;
+    const recordType = document.getElementById('record-type').value;
+    const dnsServer = document.getElementById('dns-server').value;
+    const protocol = document.getElementById('protocol').value;
+    
+    if (!domain) {
+      alert('请输入域名');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/dns/lookup?domain=${domain}&type=${recordType}&server=${dnsServer}&protocol=${protocol}`);
+      const data = await response.json();
+      
+      const resultElem = document.getElementById('result');
+      const resultDataElem = document.getElementById('result-data');
+      
+      resultDataElem.textContent = JSON.stringify(data, null, 2);
+      resultElem.classList.remove('hidden');
+    } catch (error) {
+      alert('查询失败: ' + error.message);
+    }
+  });
+</script> 

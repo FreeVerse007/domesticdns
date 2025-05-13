@@ -1,0 +1,379 @@
+/* DNS日志增强样式 */
+
+/* 统计卡片美化 */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  border: none !important;
+  background: linear-gradient(145deg, #ffffff, #f0f4f8) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+}
+
+.stat-card.success::before {
+  background: linear-gradient(90deg, var(--success), #6de69c);
+}
+
+.stat-card.danger::before {
+  background: linear-gradient(90deg, var(--danger), #f17a6e);
+}
+
+.stat-card.warning::before {
+  background: linear-gradient(90deg, var(--warning), #ffc14d);
+}
+
+.stat-card:hover {
+  transform: translateY(-8px) !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+.stat-icon {
+  margin-bottom: 20px !important;
+  background: radial-gradient(circle, rgba(52, 152, 219, 0.1) 0%, rgba(52, 152, 219, 0.05) 70%) !important;
+  width: 64px !important;
+  height: 64px !important;
+  font-size: 1.5rem !important;
+}
+
+.stat-value {
+  font-size: 2.25rem !important;
+  font-weight: 800 !important;
+  line-height: 1.2;
+  margin-bottom: 12px !important;
+  background: linear-gradient(45deg, var(--primary-dark), var(--primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -1px;
+}
+
+.stat-card.success .stat-value {
+  background: linear-gradient(45deg, #219653, var(--success));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-card.danger .stat-value {
+  background: linear-gradient(45deg, #c0392b, var(--danger));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-card.warning .stat-value {
+  background: linear-gradient(45deg, #d35400, var(--warning));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  text-transform: uppercase;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  color: var(--gray) !important;
+  opacity: 0.8;
+}
+
+/* 进度条样式美化 */
+.progress {
+  height: 8px !important;
+  background-color: rgba(52, 152, 219, 0.1) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+  margin-top: 12px !important;
+}
+
+.progress-bar {
+  background: linear-gradient(90deg, var(--primary-dark), var(--primary)) !important;
+  border-radius: 10px;
+  transition: width 0.5s ease-in-out !important;
+}
+
+/* 统计面板美化 */
+.stats-dashboard {
+  position: relative;
+  background: linear-gradient(135deg, #ffffff, #f8f9fa) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  padding: 30px !important;
+  overflow: hidden;
+}
+
+.stats-dashboard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233498db' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+
+.dashboard-title {
+  position: relative;
+  margin-bottom: 30px !important;
+  color: var(--primary-dark) !important;
+  font-size: 1.75rem !important;
+  font-weight: 700 !important;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(52, 152, 219, 0.1);
+}
+
+.dashboard-title::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 3px;
+}
+
+.dashboard-title i {
+  color: var(--primary);
+}
+
+/* 图表卡片美化 */
+.chart-card {
+  background: white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+  overflow: hidden;
+  transition: all 0.3s ease !important;
+}
+
+.chart-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1) !important;
+}
+
+.chart-card h3 {
+  padding: 20px !important;
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  color: var(--primary-dark) !important;
+  background: linear-gradient(to right, #f8f9fa, #ffffff) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.chart-header {
+  padding: 20px !important;
+  background: linear-gradient(to right, #f8f9fa, #ffffff) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.chart-header h5 {
+  margin: 0 !important;
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  color: var(--primary-dark) !important;
+  display: flex;
+  align-items: center;
+}
+
+.chart-header h5 .icon {
+  margin-right: 8px;
+  color: var(--primary);
+}
+
+.chart-body {
+  padding: 20px !important;
+}
+
+.chart-content {
+  padding: 20px !important;
+}
+
+/* 表格样式改进 */
+.chart-content table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.chart-content table th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gray);
+  padding: 10px;
+  border-bottom: 2px solid #f0f4f8;
+}
+
+.chart-content table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f0f4f8;
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.chart-content table tr:last-child td {
+  border-bottom: none;
+}
+
+.chart-content table tr:hover td {
+  background-color: rgba(52, 152, 219, 0.03);
+}
+
+.chart-content .record-type {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: rgba(52, 152, 219, 0.1);
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.record-type {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 加载状态美化 */
+.loading-container {
+  padding: 40px !important;
+}
+
+.loading-spinner {
+  width: 50px !important;
+  height: 50px !important;
+  border-width: 4px !important;
+  margin-bottom: 20px !important;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .stats-dashboard {
+    padding: 20px !important;
+  }
+  
+  .stat-value {
+    font-size: 1.75rem !important;
+  }
+  
+  .stat-icon {
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 1.25rem !important;
+    margin-bottom: 15px !important;
+  }
+}
+
+/* 动画效果 */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.card-animate {
+  animation: pulse 2s infinite ease-in-out;
+  animation-delay: calc(var(--animation-order, 0) * 0.2s);
+}
+
+.stat-card:nth-child(1) {
+  --animation-order: 1;
+}
+
+.stat-card:nth-child(2) {
+  --animation-order: 2;
+}
+
+.stat-card:nth-child(3) {
+  --animation-order: 3;
+}
+
+.stat-card:nth-child(4) {
+  --animation-order: 4;
+}
+
+.stat-card:nth-child(5) {
+  --animation-order: 5;
+}
+
+/* 额外的徽章样式 */
+.badge {
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+/* 特殊颜色标记 */
+.text-success {
+  color: var(--success) !important;
+}
+
+.text-danger {
+  color: var(--danger) !important;
+}
+
+.text-warning {
+  color: var(--warning) !important;
+}
+
+.text-primary {
+  color: var(--primary) !important;
+}
+
+.bg-success {
+  background-color: var(--success) !important;
+}
+
+.bg-danger {
+  background-color: var(--danger) !important;
+}
+
+.bg-warning {
+  background-color: var(--warning) !important;
+}
+
+.bg-primary {
+  background-color: var(--primary) !important;
+}
+
+.text-muted {
+  color: var(--gray) !important;
+  opacity: 0.7;
+}
+
+/* 标签和数值 */
+.fw-medium {
+  font-weight: 600 !important;
+}
+
+small {
+  font-size: 0.8rem;
+}
+
+code {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.05);
+  color: var(--dark);
+  font-size: 0.85rem;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+} 

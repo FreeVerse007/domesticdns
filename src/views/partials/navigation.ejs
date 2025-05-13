@@ -1,0 +1,211 @@
+<nav class="main-nav">
+  <div class="nav-container">
+    <ul class="nav-links">
+      <li class="nav-item">
+        <a href="/" class="nav-link <%= currentPage === 'home' ? 'active' : '' %>">
+          <span class="icon icon-home"></span>首页
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/dns-test" class="nav-link <%= currentPage === 'dns-test' ? 'active' : '' %>">
+          <span class="icon icon-dashboard"></span>负载测试
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/logs" class="nav-link <%= currentPage === 'logs' ? 'active' : '' %>">
+          <span class="icon icon-history"></span>请求记录
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/dns-management" class="nav-link <%= currentPage === 'dns-management' ? 'active' : '' %>">
+          <span class="icon icon-dns"></span>解析管理
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/dns-security" class="nav-link <%= currentPage === 'dns-security' ? 'active' : '' %>">
+          <span class="icon icon-shield"></span>安全DNS
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/system-management" class="nav-link <%= currentPage === 'system-management' ? 'active' : '' %>">
+          <span class="icon icon-cog"></span>系统管理
+        </a>
+      </li>
+      <li class="nav-item dropdown">
+        <a href="#" class="nav-link dropdown-toggle <%= currentPage === 'api-docs' ? 'active' : '' %>">
+          <span class="icon icon-book"></span>API文档 <span class="caret">▼</span>
+        </a>
+        <div class="dropdown-menu">
+          <a href="/api-docs" class="dropdown-item">
+            <span class="icon icon-file"></span>API概览
+          </a>
+          <a href="/api" class="dropdown-item">
+            <span class="icon icon-exchange"></span>REST API
+          </a>
+          <a href="/api/dns/lookup?domain=example.com" class="dropdown-item">
+            <span class="icon icon-search"></span>DNS查询示例
+          </a>
+          <a href="/api/status" class="dropdown-item">
+            <span class="icon icon-server"></span>服务状态
+          </a>
+        </div>
+      </li>
+    </ul>
+    
+    <div class="user-actions">
+      <% if (typeof ctx !== 'undefined' && ctx.state && ctx.state.user) { %>
+        <div class="dropdown user-dropdown">
+          <a href="#" class="nav-link dropdown-toggle">
+            <span class="icon icon-user"></span>
+            <%= ctx.state.user.username %> <span class="caret">▼</span>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right">
+            <a href="/profile" class="dropdown-item">
+              <span class="icon icon-user"></span>个人资料
+            </a>
+            <a href="/change-password" class="dropdown-item">
+              <span class="icon icon-key"></span>修改密码
+            </a>
+            <a href="#" id="logout-btn" class="dropdown-item">
+              <span class="icon icon-logout"></span>注销
+            </a>
+          </div>
+        </div>
+      <% } else if (currentPage !== 'api-docs') { %>
+        <a href="/login" class="btn btn-primary btn-sm">
+          <span class="icon icon-login"></span>登录
+        </a>
+      <% } %>
+    </div>
+    
+    <div class="nav-toggle" id="navToggle" aria-label="菜单">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+</nav>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 移动端菜单切换
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.querySelector('.nav-links');
+    
+    if (navToggle) {
+      navToggle.addEventListener('click', function() {
+        navLinks.classList.toggle('active');
+        this.classList.toggle('active');
+      });
+    }
+    
+    // 点击文档其他地方关闭菜单
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav-toggle') && !e.target.closest('.nav-links')) {
+        if (navLinks.classList.contains('active')) {
+          navLinks.classList.remove('active');
+          navToggle.classList.remove('active');
+        }
+      }
+    });
+    
+    // 自定义下拉菜单
+    const dropdowns = document.querySelectorAll('.dropdown');
+    
+    // 在移动设备上
+    function handleDropdownsOnMobile() {
+      if (window.innerWidth <= 768) {
+        dropdowns.forEach(dropdown => {
+          const toggle = dropdown.querySelector('.dropdown-toggle');
+          const menu = dropdown.querySelector('.dropdown-menu');
+          
+          if (toggle) {
+            toggle.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              dropdown.classList.toggle('active');
+              
+              // 关闭其他下拉菜单
+              dropdowns.forEach(otherDropdown => {
+                if (otherDropdown !== dropdown && otherDropdown.classList.contains('active')) {
+                  otherDropdown.classList.remove('active');
+                }
+              });
+            });
+          }
+        });
+      }
+    }
+    
+    handleDropdownsOnMobile();
+    
+    // 在窗口大小变化时重新初始化
+    window.addEventListener('resize', handleDropdownsOnMobile);
+    
+    // 处理注销按钮点击事件
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        
+        try {
+          const response = await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            // 注销成功，重定向到登录页面
+            window.location.href = '/login';
+          } else {
+            console.error('注销失败');
+          }
+        } catch (error) {
+          console.error('注销请求失败:', error);
+        }
+      });
+    }
+  });
+</script>
+
+<style>
+  /* 添加用户操作样式 */
+  .user-actions {
+    display: flex;
+    align-items: center;
+    margin-left: 1rem;
+  }
+  
+  .user-dropdown .dropdown-menu-right {
+    right: 0;
+    left: auto;
+  }
+  
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--primary-dark);
+  }
+  
+  @media (max-width: 768px) {
+    .user-actions {
+      position: absolute;
+      right: 60px;
+      top: 10px;
+    }
+  }
+</style> 

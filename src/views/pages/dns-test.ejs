@@ -1,0 +1,1560 @@
+<!-- DNS服务器53端口负载测试页面 -->
+<link rel="stylesheet" href="/css/global-components.css">
+
+<style>
+/* 重置图表容器样式 */
+.chart-section {
+  margin-bottom: 40px;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  padding: 0;
+  overflow: hidden;
+}
+
+.chart-section h3 {
+  padding: 10px 15px;
+  margin: 0;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+}
+
+.chart-wrapper {
+  width: 100%;
+  height: 400px;
+  padding: 10px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.echarts-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 调试样式 */
+.debug-info {
+  background-color: #f8f9fa;
+  border-top: 1px solid #ddd;
+  padding: 10px;
+  font-family: monospace;
+  font-size: 12px;
+  max-height: 100px;
+  overflow: auto;
+  display: none;
+}
+
+/* DNS查询详情弹窗居中样式 */
+.query-detail-info {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  max-width: 80%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* 减少页面间距的样式 */
+.dns-test-wrapper {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.dns-test-container {
+  padding: 0 !important;
+  margin-top: -20px !important;
+}
+
+/* 减少表单卡片的上下边距 */
+.test-form.card {
+  margin-top: 0 !important;
+  margin-bottom: 10px !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+
+/* 减少h2标题的上下边距 */
+.test-form.card h2 {
+  margin-top: 0 !important;
+  margin-bottom: 10px !important;
+}
+
+/* 减少表单行之间的间距 */
+.form-row {
+  margin-bottom: 8px !important;
+}
+
+/* 减少标签和输入框之间的间距 */
+.form-group label {
+  margin-bottom: 2px !important;
+  display: block;
+}
+</style>
+
+<div class="dns-test-wrapper">
+<div class="dns-test-container">
+  <div class="test-form card">
+    <h2>测试配置</h2>
+    <div class="form-row">
+      <div class="form-group" style="flex: 1;">
+        <label for="dnsServer">目标DNS服务器地址</label>
+        <input type="text" id="dnsServer" value="127.0.0.1:53" placeholder="127.0.0.1:53">
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label for="recordType">记录类型</label>
+        <select id="recordType">
+          <option value="A" selected>A</option>
+          <option value="AAAA">AAAA</option>
+          <option value="MX">MX</option>
+          <option value="TXT">TXT</option>
+          <option value="NS">NS</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group" style="flex: 1;">
+        <label for="queryMode">查询模式</label>
+        <select id="queryMode">
+          <option value="lookup" selected>标准查询(Lookup)</option>
+          <option value="reverse">反向查询(Reverse)</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label for="timeout">超时时间(毫秒)</label>
+        <input type="number" id="timeout" min="1000" max="30000" value="5000">
+      </div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group" style="flex: 1;">
+        <label for="concurrency">并发查询数</label>
+        <input type="number" id="concurrency" min="1" max="1000" value="10">
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label for="totalQueries">总查询次数</label>
+        <input type="number" id="totalQueries" min="100" max="100000" value="100">
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label for="queryRate">每秒查询数</label>
+        <input type="number" id="queryRate" min="10" max="10000" value="100">
+      </div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group" style="flex: 2;">
+        <label for="domainList">测试域名 (每行一个)</label>
+        <textarea id="domainList" rows="4" placeholder="example.com
+google.com
+baidu.com
+github.com
+microsoft.com"></textarea>
+      </div>
+      <div class="form-group button-group" style="flex: 1; align-self: flex-end;">
+        <button id="startBtn">开始测试</button>
+        <button id="stopBtn" disabled>停止测试</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-results hidden" id="testResults">
+    <h2>测试结果</h2>
+    
+    <div class="progress-container">
+      <h3>测试进度 <span id="progressText">0%</span></h3>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+    
+    <div class="stats-container">
+      <div class="stat-card">
+        <h3>已完成查询</h3>
+        <div class="stat-value" id="completedQueries">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>成功率</h3>
+        <div class="stat-value" id="successRate">0%</div>
+      </div>
+      <div class="stat-card">
+        <h3>每秒查询数</h3>
+        <div class="stat-value" id="queriesPerSecond">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>平均响应时间</h3>
+        <div class="stat-value" id="avgResponseTime">0 ms</div>
+      </div>
+    </div>
+    
+    <!-- 响应时间分布图表 -->
+    <div class="chart-section">
+      <h3>响应时间分布</h3>
+      <div class="chart-wrapper">
+        <div id="responseTimeChart" class="echarts-container"></div>
+      </div>
+      <a href="javascript:void(0)" onclick="document.getElementById('responseTimeDebug').classList.toggle('show')"></a>
+      <div id="responseTimeDebug" class="debug-info">图表尚未初始化</div>
+    </div>
+    
+    <div class="recent-queries">
+      <h3>最近查询记录 <span id="recordCount">(0/1000)</span></h3>
+      <table>
+        <thead>
+          <tr>
+            <th>查询目标</th>
+            <th>类型</th>
+            <th>服务器</th>
+            <th>响应时间</th>
+            <th>状态</th>
+            <th>DNS查询详情</th>
+          </tr>
+        </thead>
+        <tbody id="recentQueries">
+          <tr>
+            <td colspan="6" class="loading">尚无查询记录</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="/js/echarts.min.js"></script>
+<script>
+// 确保DOM完全加载后再初始化
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('页面DOM已加载，正在初始化DNS测试界面...');
+  
+  // 检查ECharts类是否可用
+  if (typeof echarts === 'undefined') {
+    console.error('ECharts库未加载！');
+    alert('图表库未加载，图表功能将不可用。请检查网络连接或刷新页面。');
+  } else {
+    console.log('ECharts库已加载');
+  }
+  
+  // 确保页面已完全渲染后再继续
+  setTimeout(() => {
+    initTestPage();
+  }, 100);
+  
+  // 初始化测试页面
+  function initTestPage() {
+    // 获取DOM元素
+    const elements = {
+      dnsServer: document.getElementById('dnsServer'),
+      recordType: document.getElementById('recordType'),
+      queryMode: document.getElementById('queryMode'),
+      timeout: document.getElementById('timeout'),
+      concurrency: document.getElementById('concurrency'),
+      totalQueries: document.getElementById('totalQueries'),
+      queryRate: document.getElementById('queryRate'),
+      domainList: document.getElementById('domainList'),
+      startBtn: document.getElementById('startBtn'),
+      stopBtn: document.getElementById('stopBtn'),
+      testResults: document.getElementById('testResults'),
+      progressFill: document.getElementById('progressFill'),
+      progressText: document.getElementById('progressText'),
+      completedQueries: document.getElementById('completedQueries'),
+      successRate: document.getElementById('successRate'),
+      queriesPerSecond: document.getElementById('queriesPerSecond'),
+      avgResponseTime: document.getElementById('avgResponseTime'),
+      responseTimeChart: document.getElementById('responseTimeChart'),
+      recentQueries: document.getElementById('recentQueries'),
+      recordCount: document.getElementById('recordCount')
+    };
+    
+    // 检查所有重要元素是否存在
+    const checkElements = () => {
+      const missingElements = [];
+      for (const [key, element] of Object.entries(elements)) {
+        if (!element) {
+          missingElements.push(key);
+        }
+      }
+      
+      if (missingElements.length > 0) {
+        console.error('缺少DOM元素:', missingElements.join(', '));
+        alert('页面初始化失败: 部分界面元素未找到。请检查控制台获取详情。');
+        return false;
+      }
+      
+      console.log('所有DOM元素已找到');
+      return true;
+    };
+    
+    // 如果元素检查失败，不继续初始化
+    if (!checkElements()) {
+      console.error('DNS端口负载测试页面初始化失败: 页面元素未找到');
+      return;
+    }
+    
+    console.log('初始化测试状态...');
+    
+    // 测试状态
+    let testState = {
+      running: false,
+      startTime: null,
+      completed: 0,
+      success: 0,
+      fail: 0,
+      queries: [],
+      responseTimes: [],
+      responseTimeData: [0, 0, 0, 0, 0, 0],
+      stopRequested: false,
+      charts: {
+        responseTime: null
+      },
+      runningTasks: [],
+      lastUpdate: Date.now(),
+      MAX_RECORDS: 1000,  // 最大记录数量修改为1000
+      completedAllQueries: false
+    };
+    
+    // 启动测试
+    elements.startBtn.addEventListener('click', startTest);
+    
+    // 停止测试
+    elements.stopBtn.addEventListener('click', stopTest);
+    
+    // 添加全局点击事件，用于关闭DNS查询详情窗口
+    document.addEventListener('click', function(event) {
+      // 获取所有当前显示的详情窗口
+      const openDetailInfos = document.querySelectorAll('.query-detail-info[style*="display: block"]');
+      
+      openDetailInfos.forEach(detailInfo => {
+        // 如果点击的不是详情按钮，并且不是详情内容的子元素，则关闭详情窗口
+        const detailBtn = detailInfo.parentNode.querySelector('.detail-btn');
+        if (event.target !== detailBtn && !detailInfo.contains(event.target)) {
+          detailInfo.style.display = 'none';
+        }
+      });
+    });
+    
+    console.log('事件监听器已注册');
+    
+    // 强制重置按钮状态
+    function forceResetButtonStates(resetStopButton = true) {
+      console.log('强制重置按钮状态', resetStopButton ? '(包括停止按钮)' : '(仅开始按钮)');
+      
+      // 确保测试状态已重置
+      testState.running = false;
+      testState.stopRequested = true;
+      
+      // 强制设置按钮属性
+      if (elements.startBtn) {
+        elements.startBtn.disabled = false;
+        elements.startBtn.style.opacity = '';
+        elements.startBtn.style.cursor = 'pointer';
+        elements.startBtn.classList.remove('disabled');
+        elements.startBtn.removeAttribute('disabled');
+      }
+      
+      // 即使不重置停止按钮的状态，也总是重置其文本
+      if (elements.stopBtn) {
+        elements.stopBtn.textContent = '停止测试';
+        
+        if (resetStopButton) {
+          elements.stopBtn.disabled = true;
+          elements.stopBtn.style.opacity = '0.7';
+          elements.stopBtn.style.cursor = 'not-allowed';
+          elements.stopBtn.classList.add('disabled');
+          elements.stopBtn.setAttribute('disabled', 'disabled');
+        }
+      }
+      
+      // 输出按钮状态日志
+      console.log('按钮状态重置完成:', {
+        startBtn: elements.startBtn ? {
+          disabled: elements.startBtn.disabled,
+          hasDisabledAttr: elements.startBtn.hasAttribute('disabled')
+        } : 'not found',
+        stopBtn: elements.stopBtn ? {
+          disabled: elements.stopBtn.disabled,
+          hasDisabledAttr: elements.stopBtn.hasAttribute('disabled'),
+          textContent: elements.stopBtn.textContent
+        } : 'not found'
+      });
+    }
+    
+    // 启动测试函数
+    function startTest() {
+      console.log('开始DNS端口负载测试...');
+      try {
+        // 验证输入
+        const dnsServer = elements.dnsServer.value.trim();
+        if (!dnsServer) {
+          showErrorDialog('输入错误', '请输入本地DNS服务器地址', 
+            '<p>本地DNS服务器地址不能为空。请输入有效的服务器IP地址和端口，格式为: IP:端口</p>' +
+            '<p>例如: "127.0.0.1:53" 或 "192.168.1.1:53"</p>');
+          return;
+        }
+        
+        if (!dnsServer.includes(':')) {
+          console.warn('DNS服务器地址未指定端口，将使用默认53端口');
+        }
+        
+        const recordType = elements.recordType.value;
+        const queryMode = elements.queryMode.value;
+        const timeout = parseInt(elements.timeout.value) || 5000;
+        const concurrency = parseInt(elements.concurrency.value) || 50;
+        const totalQueries = parseInt(elements.totalQueries.value) || 10000;
+        const queryRate = parseInt(elements.queryRate.value) || 100;
+        
+        if (queryRate > 10000) {
+          showErrorDialog('警告', '每秒查询数过高', 
+            '<p>你设置的每秒查询数超过10000，可能导致系统不稳定。</p>' +
+            '<p>建议设置一个较低的值，除非你确定目标服务器能够处理如此高的负载。</p>' +
+            '<p>是否继续测试?</p>');
+          return;
+        }
+        
+        // 获取并验证域名列表
+        const domainTextValue = elements.domainList.value.trim();
+        if (!domainTextValue) {
+          showErrorDialog('输入错误', '域名列表为空', 
+            '<p>请输入至少一个测试域名。每行输入一个域名。</p>' +
+            '<p>例如:</p><pre>example.com\ngoogle.com\nbaidu.com</pre>');
+          return;
+        }
+        
+        const domains = domainTextValue.split('\n')
+          .map(line => line.trim())
+          .filter(line => line && line.length > 0);
+        
+        if (domains.length === 0) {
+          showErrorDialog('输入错误', '没有有效的域名', 
+            '<p>请确保输入的域名格式正确。</p>' +
+            '<p>每行应该包含一个有效的域名，如 "example.com"。</p>');
+          return;
+        }
+        
+        console.log(`准备测试: ${domains.length}个域名, ${concurrency}并发, 类型=${recordType}, 目标=${totalQueries}次查询`);
+        
+        // 重置测试状态
+        elements.stopBtn.disabled = false;
+        elements.startBtn.disabled = true;
+        
+        // 设置按钮视觉状态
+        elements.startBtn.style.opacity = '0.7';
+        elements.startBtn.style.cursor = 'not-allowed';
+        elements.stopBtn.style.opacity = '';
+        elements.stopBtn.style.cursor = 'pointer';
+        
+        testState = {
+          running: true,
+          startTime: Date.now(),
+          completed: 0,
+          success: 0,
+          fail: 0,
+          queries: [],
+          responseTimes: [],
+          responseTimeData: [0, 0, 0, 0, 0, 0],
+          stopRequested: false,
+          charts: {
+            responseTime: null
+          },
+          runningTasks: [],
+          lastUpdate: Date.now(),
+          MAX_RECORDS: 1000,
+          completedAllQueries: false
+        };
+        
+        // 清空UI元素
+        elements.recentQueries.innerHTML = '<tr><td colspan="6" class="loading">测试中，等待查询结果...</td></tr>';
+        elements.completedQueries.textContent = '0';
+        elements.successRate.textContent = '0%';
+        elements.queriesPerSecond.textContent = '0';
+        elements.avgResponseTime.textContent = '0 ms';
+        elements.recordCount.textContent = '(0/' + testState.MAX_RECORDS + ')';
+        
+        // 显示测试结果区域
+        elements.testResults.classList.remove('hidden');
+        
+        // 初始化图表
+        initCharts();
+        
+        // 开始测试
+        console.log('开始DNS端口负载测试', {
+          server: dnsServer,
+          type: recordType,
+          mode: queryMode,
+          timeout: timeout,
+          concurrency,
+          totalQueries,
+          queryRate,
+          domains
+        });
+        
+        // 执行测试过程
+        setTimeout(() => {
+          runTest(domains, recordType, dnsServer, concurrency, totalQueries, queryRate, queryMode, timeout);
+        }, 100);
+      } catch (error) {
+        console.error('启动测试失败:', error);
+        showErrorDialog('启动测试失败',
+          `启动测试过程中出错: ${error.message}`,
+          `<p>启动DNS测试时遇到问题。</p>
+          <p>详细错误: ${error.stack || error.toString()}</p>`);
+        
+        // 恢复UI状态
+        elements.startBtn.disabled = false;
+        elements.startBtn.textContent = '开始测试';
+        elements.stopBtn.disabled = true;
+      }
+    }
+    
+    // 停止测试函数
+    function stopTest() {
+      if (!testState.running) return;
+      
+      console.log('用户请求停止测试');
+      testState.stopRequested = true;
+      
+      // 更新按钮状态 - 立即禁用停止按钮，启用开始按钮
+      elements.stopBtn.disabled = true;
+      elements.stopBtn.textContent = '正在停止...';
+      elements.stopBtn.style.opacity = '0.7';
+      elements.stopBtn.style.cursor = 'not-allowed';
+      
+      // 启用开始按钮
+      elements.startBtn.disabled = false;
+      elements.startBtn.style.opacity = '';
+      elements.startBtn.style.cursor = 'pointer';
+      
+      // 确保所有运行中的查询任务都有机会结束
+      const pendingTasks = [];
+      if (testState.runningTasks && testState.runningTasks.length > 0) {
+        testState.runningTasks.forEach(task => {
+          if (task && typeof task.cancel === 'function') {
+            pendingTasks.push(task.cancel());
+          }
+        });
+        
+        // 清空运行中的任务列表
+        testState.runningTasks = [];
+      }
+      
+      // 确认所有活动请求已完成
+      Promise.all(pendingTasks).then(() => {
+        // 重置按钮状态
+        console.log('所有任务已取消，重置按钮状态');
+        elements.stopBtn.textContent = '停止测试';
+        elements.stopBtn.disabled = true;
+        finishTest();
+      }).catch(err => {
+        console.error('停止挂起任务时出错:', err);
+        // 重置按钮状态
+        console.log('任务取消出错，强制重置按钮状态');
+        elements.stopBtn.textContent = '停止测试';
+        elements.stopBtn.disabled = true;
+        finishTest();
+      });
+      
+      // 确保在5秒内强制结束测试，避免卡死
+      setTimeout(() => {
+        if (testState.running) {
+          console.warn('测试未在预期时间内停止，强制结束');
+          // 重置按钮状态
+          console.log('强制超时，强制重置按钮状态');
+          elements.stopBtn.textContent = '停止测试';
+          elements.stopBtn.disabled = true;
+          finishTest();
+        }
+      }, 5000);
+    }
+    
+    // 初始化图表
+    function initCharts() {
+      console.log('开始初始化图表...');
+      
+      // 获取调试元素
+      const responseTimeDebug = document.getElementById('responseTimeDebug');
+      
+      try {
+        // 确保ECharts库已加载
+        if (typeof echarts !== 'object') {
+          const errorMsg = 'ECharts库未正确加载，无法创建图表';
+          console.error(errorMsg);
+          responseTimeDebug.textContent = errorMsg;
+          return;
+        }
+        
+        // 检查容器元素
+        if (!elements.responseTimeChart) {
+          console.error('响应时间图表元素未找到');
+          responseTimeDebug.textContent = '响应时间图表元素未找到';
+          return;
+        }
+        
+        // 获取容器宽度信息，作为调试信息
+        const timeChartWidth = elements.responseTimeChart.offsetWidth;
+        const timeChartParentWidth = elements.responseTimeChart.parentElement.offsetWidth;
+        responseTimeDebug.textContent = `容器宽度信息 - 图表: ${timeChartWidth}px, 父容器: ${timeChartParentWidth}px`;
+        
+        // 销毁现有图表实例
+        if (testState.charts.responseTime) {
+          testState.charts.responseTime.dispose();
+          testState.charts.responseTime = null;
+        }
+        
+        // 确保responseTimeData已初始化
+        if (!testState.responseTimeData) {
+          testState.responseTimeData = [0, 0, 0, 0, 0, 0];
+        } else {
+          // 如果已存在，则重置为0
+          testState.responseTimeData = [0, 0, 0, 0, 0, 0];
+        }
+        
+        // 创建响应时间分布图表
+        testState.charts.responseTime = echarts.init(elements.responseTimeChart, null, {
+          renderer: 'canvas',
+          useDirtyRect: false,
+          width: 'auto',
+          height: 'auto'
+        });
+        
+        // 设置响应时间分布图表选项
+        const responseTimeOption = {
+          animation: true,
+          title: {
+            text: '响应时间分布 (总计: 0 次查询)',
+            left: 'center'
+          },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'shadow'
+            }
+          },
+          grid: {
+            top: 40,
+            left: 50,
+            right: 20,
+            bottom: 50,
+            containLabel: true
+          },
+          xAxis: {
+            type: 'category',
+            data: ['0-10ms', '10-50ms', '50-100ms', '100-200ms', '200-500ms', '500ms+'],
+            axisTick: {
+              alignWithLabel: true
+            }
+          },
+          yAxis: {
+            type: 'value',
+            name: '查询数量',
+            nameLocation: 'middle',
+            nameGap: 30
+          },
+          series: [{
+            name: '查询数量',
+            type: 'bar',
+            data: testState.responseTimeData,
+            itemStyle: {
+              color: {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [{
+                  offset: 0, color: '#4caf50'
+                }, {
+                  offset: 1, color: '#81c784'
+                }]
+              }
+            },
+            barWidth: '60%'
+          }]
+        };
+        
+        // 使用配置项和数据显示图表
+        testState.charts.responseTime.setOption(responseTimeOption);
+        
+        // 添加容器大小调试信息
+        responseTimeDebug.textContent += `\n初始化后图表尺寸: ${testState.charts.responseTime.getWidth()} x ${testState.charts.responseTime.getHeight()}`;
+        
+        // 显示调试信息 - 在开发环境可以取消注释
+        // document.getElementById('responseTimeDebug').classList.add('show');
+        
+        console.log('图表初始化完成，原始尺寸 - 响应时间:', testState.charts.responseTime.getWidth(), 'x', testState.charts.responseTime.getHeight());
+        
+        // 监听窗口大小变化，调整图表大小
+        window.addEventListener('resize', function() {
+          console.log('检测到窗口大小变化，调整图表大小');
+          
+          if (testState.charts.responseTime) {
+            testState.charts.responseTime.resize({width: 'auto', height: 'auto'});
+            console.log('响应时间图表大小已调整:', testState.charts.responseTime.getWidth(), 'x', testState.charts.responseTime.getHeight());
+          }
+        });
+        
+        // 强制图表重新渲染
+        setTimeout(() => {
+          if (testState.charts.responseTime) {
+            console.log('强制渲染响应时间图表');
+            testState.charts.responseTime.clear();
+            testState.charts.responseTime.setOption(responseTimeOption, true);
+            testState.charts.responseTime.resize({width: 'auto', height: 'auto'});
+          }
+        }, 50);
+        
+        // 存储初始化的图表数据到测试状态中
+        testState.responseTimeData = [0, 0, 0, 0, 0, 0];
+        
+        // 延迟调整图表大小
+        setTimeout(() => {
+          if (testState.charts.responseTime) {
+            testState.charts.responseTime.resize({width: 'auto', height: 'auto'});
+            responseTimeDebug.textContent += `\n调整后图表尺寸: ${testState.charts.responseTime.getWidth()} x ${testState.charts.responseTime.getHeight()}`;
+            console.log('响应时间图表大小已调整:', testState.charts.responseTime.getWidth(), 'x', testState.charts.responseTime.getHeight());
+          }
+        }, 500);
+      } catch (error) {
+        console.error('初始化图表发生错误:', error);
+        responseTimeDebug.textContent = `图表初始化错误: ${error.message}`;
+        
+        // 确保在错误后，测试功能仍然可用
+        elements.startBtn.disabled = false;
+      }
+    }
+    
+    // 执行测试
+    async function runTest(domains, recordType, dnsServer, concurrency, totalQueries, targetQueryRate, queryMode = 'lookup', timeout = 5000) {
+      console.log(`开始执行测试循环: 并发=${concurrency}, 目标速率=${targetQueryRate}/秒, 模式=${queryMode}, 总查询数=${totalQueries}`);
+      
+      // 计算查询间隔
+      const queryIntervalMs = Math.max(1, 1000 / (targetQueryRate / concurrency));
+      console.log(`计算查询间隔: ${queryIntervalMs.toFixed(2)}ms`);
+      
+      let activeTasks = 0;
+      let consecutiveErrors = 0;
+      let allTasksCompleted = false;
+      let shouldContinueRunning = true;
+      
+      try {
+        // 设置定时更新 - 每500ms更新统计，确保UI响应及时
+        console.log('设置定时统计更新');
+        const statsInterval = setInterval(() => {
+          if (!testState.running) {
+            clearInterval(statsInterval);
+            return;
+          }
+          
+          updateStats();
+          updateProgressBar();
+          
+          // 定时检查是否需要继续发送查询
+          if (testState.completed < totalQueries && activeTasks === 0 && shouldContinueRunning) {
+            console.log(`定时检查：已完成${testState.completed}/${totalQueries}查询，但无活动任务，重新启动查询`);
+            shouldContinueRunning = true; // 确保继续运行
+            allTasksCompleted = false;
+          }
+          
+          // 检查是否已完成所有查询
+          if (testState.completed >= totalQueries && !allTasksCompleted) {
+            console.log(`定时检查：已完成所有${totalQueries}次查询，准备结束测试`);
+            allTasksCompleted = true;
+            shouldContinueRunning = false;
+            finishTest();
+          }
+        }, 500);
+        
+        // 主测试循环 - 确保继续直到所有查询都已完成
+        console.log('开始主测试循环');
+        while ((testState.completed < totalQueries || activeTasks > 0) && !testState.stopRequested && shouldContinueRunning) {
+          // 如果所有查询已完成但任务仍在运行，等待它们完成
+          if (testState.completed >= totalQueries && activeTasks > 0) {
+            console.log(`已启动所有${totalQueries}次查询，等待${activeTasks}个活动任务完成...`);
+            await new Promise(resolve => setTimeout(resolve, 100));
+            continue;
+          }
+          
+          // 如果已经发送了足够数量的查询但尚未完成，不再发送新的查询
+          if (testState.completed + activeTasks >= totalQueries) {
+            console.log(`已发起${testState.completed + activeTasks}/${totalQueries}次查询，等待现有查询完成...`);
+            await new Promise(resolve => setTimeout(resolve, 100));
+            continue;
+          }
+          
+          // 发起新查询循环 - 确保不超过总查询数
+          while (activeTasks < concurrency && testState.completed + activeTasks < totalQueries && !testState.stopRequested && shouldContinueRunning) {
+            // 随机选择域名或IP（对于反向查询）
+            let queryTarget;
+            if (queryMode === 'reverse') {
+              // 为反向查询生成随机IP地址
+              const ipPart1 = Math.floor(Math.random() * 223) + 1; // 避免生成0和保留地址
+              const ipPart2 = Math.floor(Math.random() * 256);
+              const ipPart3 = Math.floor(Math.random() * 256);
+              const ipPart4 = Math.floor(Math.random() * 254) + 1; // 避免生成0和255
+              queryTarget = `${ipPart1}.${ipPart2}.${ipPart3}.${ipPart4}`;
+            } else {
+              // 常规查询使用域名
+              queryTarget = domains[Math.floor(Math.random() * domains.length)];
+            }
+            
+            activeTasks++;
+            console.log(`发起查询 #${testState.completed + activeTasks}/${totalQueries}, 域名: ${queryTarget}`);
+            
+            // 执行查询
+            performDnsQuery(queryTarget, recordType, dnsServer, queryMode, timeout)
+              .then(result => {
+                if (result && !result.success) {
+                  consecutiveErrors++;
+                  if (consecutiveErrors > 10) {
+                    console.error('连续10次查询失败，可能存在连接问题');
+                  }
+                } else {
+                  consecutiveErrors = 0;
+                }
+              })
+              .catch(err => {
+                console.error('查询执行异常:', err);
+                consecutiveErrors++;
+              })
+              .finally(() => {
+                activeTasks--;
+                
+                // 检查是否已完成所有任务
+                if (testState.completed >= totalQueries && activeTasks === 0 && !allTasksCompleted) {
+                  console.log(`所有${totalQueries}次查询已完成，准备结束测试`);
+                  allTasksCompleted = true;
+                  shouldContinueRunning = false;
+                  finishTest();
+                }
+                
+                // 如果尚未完成所有查询，确保继续
+                if (testState.completed < totalQueries && activeTasks === 0 && !testState.stopRequested) {
+                  console.log(`已完成${testState.completed}/${totalQueries}次查询，但无活动任务，继续执行`);
+                  shouldContinueRunning = true;
+                }
+              });
+            
+            // 控制查询速率
+            await new Promise(resolve => setTimeout(resolve, queryIntervalMs));
+          }
+          
+          // 如果已经发起了足够的查询，但可能还未计入完成数，等待它们完成
+          if (testState.completed + activeTasks >= totalQueries) {
+            console.log(`已发起所有${totalQueries}次查询，等待完成...`);
+            await new Promise(resolve => setTimeout(resolve, 100));
+            continue;
+          }
+          
+          // 如果活动任务为0但仍未完成所有查询，重新开始发送查询
+          if (activeTasks === 0 && testState.completed < totalQueries && !testState.stopRequested && shouldContinueRunning) {
+            console.log(`当前已完成${testState.completed}/${totalQueries}次查询，无活动任务，继续发起查询`);
+            continue;
+          }
+          
+          // 防止CPU占用过高
+          await new Promise(resolve => setTimeout(resolve, 10));
+        }
+        
+        console.log(`测试循环完成，已完成${testState.completed}/${totalQueries}次查询，活动任务：${activeTasks}`);
+        
+        // 等待所有活动任务完成
+        if (activeTasks > 0) {
+          console.log(`等待剩余${activeTasks}个活动任务完成...`);
+          let waitCount = 0;
+          while (activeTasks > 0 && waitCount < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            waitCount++;
+          }
+          console.log(`等待结束，最终已完成${testState.completed}/${totalQueries}次查询，活动任务：${activeTasks}`);
+        }
+        
+        // 如果仍未完成所有查询，强制完成测试
+        if (testState.completed < totalQueries && !testState.stopRequested) {
+          console.log(`未完成所有查询（${testState.completed}/${totalQueries}），但测试已结束`);
+        }
+      } catch (error) {
+        console.error('测试执行错误:', error);
+      } finally {
+        // 完成测试
+        console.log(`清理并完成测试，最终已完成${testState.completed}/${totalQueries}次查询`);
+        clearInterval(statsInterval);
+        
+        // 确保测试完全结束
+        if (testState.running) {
+          console.log('确保测试状态被正确清理');
+          finishTest();
+        }
+      }
+    }
+    
+    // 执行单个DNS查询
+    async function performDnsQuery(queryTarget, type, dnsServer, queryMode = 'direct', timeout = 5000) {
+      // 增强检查：如果测试已停止或正在停止，不执行新查询
+      if (testState.stopRequested || !testState.running) {
+        console.log('测试已停止或正在停止，不执行新查询');
+        return { success: false, aborted: true };
+      }
+      
+      const startTime = performance.now();
+      let success = false;
+      let errorMessage = '';
+      let responseData = null;
+      
+      // 创建可取消的任务
+      const task = {
+        controller: new AbortController(),
+        target: queryTarget,
+        canceled: false,
+        cancel: function() {
+          this.canceled = true;
+          this.controller.abort();
+          return Promise.resolve();
+        }
+      };
+      
+      // 再次检查测试状态，避免在添加任务前测试已停止
+      if (testState.stopRequested || !testState.running) {
+        console.log('添加任务前测试已停止，取消查询');
+        return { success: false, aborted: true };
+      }
+      
+      // 添加到运行中的任务列表
+      if (!testState.runningTasks) {
+        testState.runningTasks = [];
+      }
+      testState.runningTasks.push(task);
+      
+      try {
+        // 根据查询模式构建不同的URL
+        let url;
+        if (queryMode === 'reverse') {
+          // 反向查询需要使用IP地址作为参数
+          url = `/dns/reverse?ip=${encodeURIComponent(queryTarget)}&server=${encodeURIComponent(dnsServer)}&timeout=${timeout}`;
+        } else {
+          // 直接查询和标准查询
+          url = `/dns/${queryMode}?domain=${encodeURIComponent(queryTarget)}&type=${encodeURIComponent(type)}&server=${encodeURIComponent(dnsServer)}&timeout=${timeout}`;
+        }
+        
+        console.log(`发送DNS查询: ${url}`);
+        
+        // 设置超时
+        const timeoutId = setTimeout(() => {
+          task.cancel();
+          errorMessage = `查询超时(${timeout/1000}秒)`;
+          console.error(`查询超时: ${queryTarget}`);
+        }, timeout);
+        
+        // 执行查询
+        const response = await fetch(url, { signal: task.controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`查询返回数据:`, data);
+          
+          // 处理响应数据 - 直接DNS查询返回的是数组格式
+          if (data && Array.isArray(data) && data.length > 0) {
+            success = true;
+            responseData = {
+              success: true,
+              message: "操作成功",
+              data: data
+            };
+            console.log("处理后的响应数据:", responseData);
+          } else if (data && data.success === true) {
+            // 兼容其他可能的响应格式
+            success = true;
+            responseData = {
+              success: true,
+              message: "操作成功",
+              data: data.data || []
+            };
+          } else {
+            success = false;
+            errorMessage = (data && data.message) ? data.message : '未知错误';
+            console.error(`查询返回失败: ${queryTarget}`, errorMessage);
+          }
+        } else {
+          errorMessage = `HTTP错误: ${response.status} ${response.statusText}`;
+          console.error(errorMessage);
+          try {
+            const errorData = await response.json();
+            if (errorData && errorData.message) {
+              errorMessage = errorData.message;
+            }
+            console.error(`服务器错误详情:`, errorData);
+          } catch (e) {
+            console.error(`无法解析错误响应`);
+          }
+        }
+      } catch (error) {
+        errorMessage = error.message || '网络异常';
+        if (error.name === 'AbortError') {
+          errorMessage = '查询超时';
+        }
+        console.error(`查询异常: ${queryTarget}`, error);
+      } finally {
+        const responseTime = performance.now() - startTime;
+        
+        // 从运行任务列表中移除当前任务
+        const taskIndex = testState.runningTasks.indexOf(task);
+        if (taskIndex !== -1) {
+          testState.runningTasks.splice(taskIndex, 1);
+        }
+        
+        // 如果测试已经停止，不再更新状态
+        if (testState.stopRequested || !testState.running) {
+          return null;
+        }
+        
+        // 更新测试状态
+        testState.completed++;
+        if (success) {
+          testState.success++;
+        } else {
+          testState.fail++;
+        }
+        
+        // 记录响应时间
+        testState.responseTimes.push(responseTime);
+        
+        // 添加到查询记录
+        addQueryRecord(queryTarget, type, dnsServer, responseTime, success, errorMessage, responseData, queryMode);
+        
+        // 将结果存储到testState.queries数组
+        const queryResult = {
+          domain: queryTarget,
+          type,
+          server: dnsServer,
+          success,
+          responseTime,
+          errorMessage,
+          responseData
+        };
+        
+        // 添加到数组开头，保持最新的记录在前面
+        testState.queries.unshift(queryResult);
+        
+        // 限制数组大小，与MAX_RECORDS保持一致
+        if (testState.queries.length > testState.MAX_RECORDS) {
+          testState.queries = testState.queries.slice(0, testState.MAX_RECORDS);
+        }
+        
+        // 更新响应时间分布
+        updateResponseTimeDistribution(responseTime);
+        
+        // 立即更新进度条，不等待下一个间隔
+        updateProgressBar();
+        
+        // 每10次查询强制更新一次统计信息
+        if (testState.completed % 10 === 0) {
+          updateStats();
+        }
+        
+        // 检查是否已完成所有查询，如果是则自动结束测试
+        const totalQueries = parseInt(elements.totalQueries.value) || 10000;
+        if (testState.completed >= totalQueries && testState.running) {
+          console.log(`已完成所有${totalQueries}次查询，自动结束测试`);
+          
+          // 注意：我们不在这里调用finishTest()，而是等待主测试循环来处理结束逻辑
+          // 这样可以避免提前结束测试
+          
+          // 只是设置标记，让主循环知道我们已经完成了足够的查询
+          testState.completedAllQueries = true;
+        }
+        
+        return queryResult;
+      }
+    }
+    
+    // 更新响应时间分布
+    function updateResponseTimeDistribution(responseTime) {
+      try {
+        if (!testState.charts.responseTime) {
+          console.error('响应时间分布图表实例不存在');
+          return;
+        }
+        
+        // 确保数据数组存在
+        if (!testState.responseTimeData) {
+          testState.responseTimeData = [0, 0, 0, 0, 0, 0];
+        }
+        
+        // 更新相应的数据点
+        if (responseTime < 10) {
+          testState.responseTimeData[0]++;
+        } else if (responseTime < 50) {
+          testState.responseTimeData[1]++;
+        } else if (responseTime < 100) {
+          testState.responseTimeData[2]++;
+        } else if (responseTime < 200) {
+          testState.responseTimeData[3]++;
+        } else if (responseTime < 500) {
+          testState.responseTimeData[4]++;
+        } else {
+          testState.responseTimeData[5]++;
+        }
+        
+        // 只在需要时才更新图表，减少渲染负担
+        if (testState.completed % 5 === 0) {
+          // 计算总查询数
+          const totalQueries = testState.responseTimeData.reduce((sum, count) => sum + count, 0);
+          
+          // 更新图表数据
+          testState.charts.responseTime.setOption({
+            title: {
+              text: `响应时间分布 (总计: ${totalQueries} 次查询)`,
+              left: 'center'
+            },
+            series: [{
+              data: testState.responseTimeData
+            }]
+          });
+        }
+      } catch (error) {
+        console.error('更新响应时间分布数据出错:', error);
+      }
+    }
+    
+    // 添加查询记录到表格
+    function addQueryRecord(queryTarget, type, server, responseTime, success, errorMessage, responseData, queryMode) {
+      try {
+        // 最多保留最近1000条记录
+        const MAX_RECORDS = 1000;
+        
+        // 如果是第一条记录，清空加载提示
+        if (testState.completed === 1) {
+          elements.recentQueries.innerHTML = '';
+        }
+        
+        // 创建新行
+        const row = document.createElement('tr');
+        
+        // 域名/IP列
+        const targetCell = document.createElement('td');
+        targetCell.textContent = queryTarget;
+        row.appendChild(targetCell);
+        
+        // 类型列
+        const typeCell = document.createElement('td');
+        typeCell.textContent = type;
+        row.appendChild(typeCell);
+        
+        // 服务器列
+        const serverCell = document.createElement('td');
+        serverCell.textContent = server;
+        row.appendChild(serverCell);
+        
+        // 响应时间列
+        const timeCell = document.createElement('td');
+        timeCell.textContent = `${responseTime.toFixed(2)} ms`;
+        row.appendChild(timeCell);
+        
+        // 状态列
+        const statusCell = document.createElement('td');
+        statusCell.textContent = success ? '成功' : '失败';
+        statusCell.className = success ? 'success' : 'error';
+        row.appendChild(statusCell);
+        
+        // DNS查询详情列
+        const detailCell = document.createElement('td');
+        const detailBtn = document.createElement('button');
+        detailBtn.textContent = '查看详情';
+        detailBtn.className = 'detail-btn';
+        detailCell.appendChild(detailBtn);
+        
+        // 构建详情内容
+        const detailInfo = document.createElement('div');
+        detailInfo.className = 'query-detail-info';
+        detailInfo.style.display = 'none';
+        
+        let detailContent = `
+          <div class="detail-header">DNS查询详情</div>
+          <div class="detail-item">
+            <div class="detail-label">${queryMode === 'reverse' ? 'IP地址:' : '域名:'}</div>
+            <div class="detail-value">${queryTarget}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">查询模式:</div>
+            <div class="detail-value">${getQueryModeName(queryMode)}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">${queryMode === 'reverse' ? '' : '记录类型:'}</div>
+            <div class="detail-value">${queryMode === 'reverse' ? '' : type}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">响应时间:</div>
+            <div class="detail-value">${responseTime.toFixed(2)} ms</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">状态:</div>
+            <div class="detail-value ${success ? 'success' : 'error'}">${success ? '成功' : '失败'}</div>
+          </div>
+        `;
+        
+        if (success) {
+          // 构建成功响应的数据展示
+          detailContent += `
+            <div class="detail-item">
+              <div class="detail-label">响应数据:</div>
+              <div class="detail-value">
+                <pre>${formatJsonResponse(responseData)}</pre>
+              </div>
+            </div>
+          `;
+        } else {
+          // 构建错误响应展示
+          detailContent += `
+            <div class="detail-item">
+              <div class="detail-label">错误信息:</div>
+              <div class="detail-value error">${errorMessage || '未知错误'}</div>
+            </div>
+          `;
+        }
+        
+        detailInfo.innerHTML = detailContent;
+        
+        // 添加关闭按钮
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '关闭';
+        closeBtn.className = 'close-detail-btn';
+        closeBtn.onclick = function(event) {
+          // 防止事件冒泡，避免立即被全局点击事件关闭
+          event.stopPropagation();
+          detailInfo.style.display = 'none';
+        };
+        
+        // 添加点击事件
+        detailBtn.onclick = function(event) {
+          // 防止事件冒泡，避免立即被全局点击事件关闭
+          event.stopPropagation();
+          
+          // 关闭所有其他打开的详情
+          document.querySelectorAll('.query-detail-info').forEach(info => {
+            if (info !== detailInfo) {
+              info.style.display = 'none';
+            }
+          });
+          
+          // 切换当前详情的显示状态
+          detailInfo.style.display = detailInfo.style.display === 'none' ? 'block' : 'none';
+        };
+        
+        detailCell.appendChild(detailInfo);
+        row.appendChild(detailCell);
+        
+        // 添加到表格最前面
+        if (elements.recentQueries.firstChild) {
+          elements.recentQueries.insertBefore(row, elements.recentQueries.firstChild);
+        } else {
+          elements.recentQueries.appendChild(row);
+        }
+        
+        // 保持记录数量在限制内
+        while (elements.recentQueries.children.length > MAX_RECORDS) {
+          elements.recentQueries.removeChild(elements.recentQueries.lastChild);
+        }
+        
+        // 获取用户设置的总查询数
+        const totalQueries = parseInt(elements.totalQueries.value) || 10000;
+        const actualCompleted = Math.min(testState.completed, totalQueries);
+        
+        // 更新记录计数器，确保显示正确的查询数量
+        elements.recordCount.textContent = '(' + Math.min(actualCompleted, MAX_RECORDS) + '/' + MAX_RECORDS + ')';
+      } catch (error) {
+        console.error('添加查询记录失败:', error);
+      }
+    }
+    
+    // 格式化JSON响应数据为漂亮的字符串
+    function formatJsonResponse(responseData) {
+      try {
+        if (!responseData) return '无数据';
+        
+        const formattedData = {
+          success: true,
+          message: "操作成功",
+          data: responseData.data || []
+        };
+        
+        // 处理地址格式，确保显示正确的IP
+        if (Array.isArray(formattedData.data)) {
+          formattedData.data.forEach(item => {
+            if (item.address) {
+              // 确保地址保持原样，不做转换
+              console.log(`记录地址: ${item.address}`);
+            }
+          });
+        }
+        
+        return JSON.stringify(formattedData, null, 2);
+      } catch (error) {
+        console.error('格式化JSON数据失败:', error);
+        return JSON.stringify(responseData || {}, null, 2);
+      }
+    }
+    
+    // 更新统计数据
+    function updateStats() {
+      if (!testState.running) return;
+      
+      // 计算成功率
+      const successRate = testState.completed > 0 
+        ? (testState.success / testState.completed * 100).toFixed(2) 
+        : 0;
+      
+      // 计算平均响应时间
+      const avgResponseTime = testState.responseTimes.length > 0 
+        ? (testState.responseTimes.reduce((sum, time) => sum + time, 0) / testState.responseTimes.length).toFixed(2) 
+        : 0;
+      
+      // 计算QPS
+      const elapsedSeconds = Math.max(1, (Date.now() - testState.startTime) / 1000);
+      const qps = (testState.completed / elapsedSeconds).toFixed(2);
+      
+      // 获取用户设置的总查询数
+      const totalQueries = parseInt(elements.totalQueries.value) || 10000;
+      
+      // 更新UI - 确保已完成查询数量准确显示
+      elements.completedQueries.textContent = Math.min(testState.completed, totalQueries).toString();
+      elements.successRate.textContent = `${successRate}%`;
+      elements.avgResponseTime.textContent = `${avgResponseTime} ms`;
+      elements.queriesPerSecond.textContent = qps;
+    }
+    
+    // 更新图表
+    function updateCharts() {
+      if (!testState.running) return;
+      
+      const responseTimeDebug = document.getElementById('responseTimeDebug');
+      
+      try {
+        // 更新响应时间分布图表
+        if (testState.charts.responseTime) {
+          // 计算总查询数
+          const totalDistQueries = testState.responseTimeData ? 
+            testState.responseTimeData.reduce((sum, count) => sum + count, 0) : 0;
+          
+          // 记录当前数据进调试区
+          responseTimeDebug.textContent = `响应时间分布数据: ${JSON.stringify(testState.responseTimeData)}\n总计: ${totalDistQueries} 次查询`;
+        } else {
+          responseTimeDebug.textContent = '响应时间分布图表实例不存在，请检查初始化';
+          console.warn('响应时间分布图表实例不存在');
+        }
+      } catch (error) {
+        console.error('更新图表失败:', error);
+        responseTimeDebug.textContent = `更新图表错误: ${error.message}`;
+      }
+      
+      // 在调试区显示更新时间
+      responseTimeDebug.textContent += `\n最后更新: ${new Date().toISOString()}`;
+    }
+    
+    // 更新进度条
+    function updateProgressBar() {
+      try {
+        if (!testState.running) return;
+        
+        const totalQueries = parseInt(elements.totalQueries.value) || 10000;
+        // 确保进度不会超过100%
+        const progress = Math.min(100, (testState.completed / totalQueries) * 100);
+        
+        if (elements.progressFill && elements.progressText) {
+          elements.progressFill.style.width = `${progress}%`;
+          elements.progressText.textContent = `${progress.toFixed(1)}%`;
+          
+          console.log(`进度条更新: ${progress.toFixed(1)}% (${testState.completed}/${totalQueries})`);
+        } else {
+          console.error('进度条元素未找到');
+        }
+      } catch (error) {
+        console.error('更新进度条出错:', error);
+      }
+    }
+    
+    // 完成测试
+    function finishTest() {
+      console.log('结束测试过程');
+      
+      // 获取用户设置的总查询数
+      const totalQueries = parseInt(elements.totalQueries.value) || 10000;
+      
+      // 检查是否完成了所有查询
+      const completed = testState.completed || 0;
+      const isTestCompleted = completed >= totalQueries;
+      console.log(`测试完成情况: 已完成${completed}/${totalQueries}次查询, 完成状态:`, isTestCompleted ? "已完成" : "未完成");
+      
+      // 即使测试状态显示未运行，也执行清理操作
+      testState.running = false;
+      testState.stopRequested = true;
+      
+      // 取消所有进行中的任务
+      try {
+        if (testState.runningTasks && testState.runningTasks.length > 0) {
+          console.log(`取消${testState.runningTasks.length}个运行中的任务`);
+          testState.runningTasks.forEach(task => {
+            if (task && typeof task.cancel === 'function') {
+              task.cancel();
+            }
+          });
+          // 清空运行中的任务列表
+          testState.runningTasks = [];
+        }
+      } catch (err) {
+        console.error('取消运行中任务时出错:', err);
+      }
+      
+      // 立即更新统计信息
+      updateStats();
+      
+      // 更新UI元素，确保显示当前完成的查询数量
+      elements.completedQueries.textContent = completed.toString();
+      elements.successRate.textContent = `${(testState.success / Math.max(1, completed) * 100).toFixed(2)}%`;
+      
+      // 设置按钮状态
+      if (isTestCompleted) {
+        // 如果测试完成所有查询，则禁用停止按钮
+        forceResetButtonStates(true);
+      } else {
+        // 如果测试未完成所有查询，则保持停止按钮启用
+        forceResetButtonStates(false);
+      }
+      
+      // 确保更新UI状态
+      setTimeout(() => {
+        // 再次检查测试完成情况并设置按钮状态
+        if (isTestCompleted) {
+          forceResetButtonStates(true);
+        } else {
+          forceResetButtonStates(false);
+        }
+        
+        // 更新进度条，确保它显示正确的完成百分比
+        if (elements.progressFill && elements.progressText) {
+          const progress = Math.min(100, (completed / totalQueries) * 100);
+          elements.progressFill.style.width = `${progress}%`;
+          elements.progressText.textContent = `${progress.toFixed(1)}%`;
+        }
+        
+        // 最终更新统计
+        updateStats();
+        
+        // 计算最终统计结果
+        const totalTime = (Date.now() - testState.startTime) / 1000;
+        const successRate = completed > 0 
+          ? (testState.success / completed * 100).toFixed(2) 
+          : 0;
+        const avgResponseTime = testState.responseTimes.length > 0 
+          ? (testState.responseTimes.reduce((sum, time) => sum + time, 0) / testState.responseTimes.length).toFixed(2) 
+          : 0;
+        const qps = (completed / totalTime).toFixed(2);
+        
+        console.log('测试完成', {
+          completed: completed,
+          totalQueries: totalQueries,
+          successRate: successRate + '%',
+          avgResponseTime: avgResponseTime + ' ms',
+          qps: qps + ' 查询/秒',
+          totalTime: totalTime.toFixed(2) + ' 秒'
+        });
+        
+        // 如果成功率过低，显示警告
+        if (completed > 10 && successRate < 50) {
+          alert(`警告: 测试成功率过低 (${successRate}%)，请检查本地DNS服务器配置或运行状态是否正常。`);
+        }
+        
+        // 最后一次检查测试完成情况并设置按钮状态
+        if (isTestCompleted) {
+          forceResetButtonStates(true);
+        } else {
+          forceResetButtonStates(false);
+        }
+      }, 200);
+      
+      // 再次确保按钮状态正确
+      setTimeout(() => {
+        if (isTestCompleted) {
+          forceResetButtonStates(true);
+        } else {
+          forceResetButtonStates(false);
+        }
+      }, 500);
+    }
+    
+    // 显示自定义错误弹窗
+    function showErrorDialog(title, message, detailHtml, onCloseCallback) {
+      // 移除旧的弹窗(如果存在)
+      const oldDialog = document.getElementById('errorDialog');
+      if (oldDialog) {
+        oldDialog.remove();
+      }
+      
+      // 创建弹窗容器
+      const dialog = document.createElement('div');
+      dialog.id = 'errorDialog';
+      dialog.className = 'error-dialog';
+      
+      // 创建弹窗内容
+      dialog.innerHTML = `
+        <div class="error-dialog-content">
+          <div class="error-dialog-header">
+            <h3>${title}</h3>
+            <button class="error-dialog-close">&times;</button>
+          </div>
+          <div class="error-dialog-body">
+            <div class="error-message">${message}</div>
+            <div class="error-details">${detailHtml}</div>
+          </div>
+          <div class="error-dialog-footer">
+            <button class="error-dialog-retry">重试</button>
+            <button class="error-dialog-cancel">取消</button>
+          </div>
+        </div>
+      `;
+      
+      // 添加到body
+      document.body.appendChild(dialog);
+      
+      // 添加事件监听
+      dialog.querySelector('.error-dialog-close').addEventListener('click', () => {
+        dialog.remove();
+        if (onCloseCallback) onCloseCallback();
+      });
+      
+      dialog.querySelector('.error-dialog-retry').addEventListener('click', () => {
+        dialog.remove();
+        if (onCloseCallback) onCloseCallback();
+      });
+      
+      dialog.querySelector('.error-dialog-cancel').addEventListener('click', () => {
+        dialog.remove();
+        if (onCloseCallback) onCloseCallback();
+      });
+      
+      // 点击弹窗外部关闭
+      dialog.addEventListener('click', (event) => {
+        if (event.target === dialog) {
+          dialog.remove();
+          if (onCloseCallback) onCloseCallback();
+        }
+      });
+      
+      // 添加动画效果
+      setTimeout(() => {
+        dialog.classList.add('show');
+      }, 10);
+    }
+
+    // 获取查询模式的友好名称
+    function getQueryModeName(mode) {
+      switch(mode) {
+        case 'lookup': return '标准查询(Lookup)';
+        case 'reverse': return '反向查询(Reverse)';
+        default: return '未知模式';
+      }
+    }
+  }
+});
+</script> 

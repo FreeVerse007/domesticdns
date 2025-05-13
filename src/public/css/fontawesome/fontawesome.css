@@ -1,0 +1,68 @@
+/**
+ * 简化版Font Awesome 5.15.4
+ * 只包含DomesticDNS网站所需的图标
+ */
+
+:root {
+  --fa-primary-color: currentColor;
+  --fa-secondary-color: currentColor;
+}
+
+.fas, 
+.fa {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1;
+  font-family: 'FontAwesome';
+}
+
+/* 字体定义 */
+@font-face {
+  font-family: 'FontAwesome';
+  font-style: normal;
+  font-weight: 900;
+  src: url('../fonts/fa-solid-900.woff2') format('woff2');
+}
+
+/* 通用样式 */
+.fa-fw {
+  text-align: center;
+  width: 1.25em;
+}
+
+/* 网站所用图标定义 */
+.fa-home:before {
+  content: "\f015";
+}
+
+.fa-tachometer-alt:before {
+  content: "\f3fd";
+}
+
+.fa-history:before {
+  content: "\f1da";
+}
+
+.fa-book:before {
+  content: "\f02d";
+}
+
+.fa-file-alt:before {
+  content: "\f15c";
+}
+
+.fa-search:before {
+  content: "\f002";
+}
+
+.fa-server:before {
+  content: "\f233";
+}
+
+.fa-exchange-alt:before {
+  content: "\f362";
+} 

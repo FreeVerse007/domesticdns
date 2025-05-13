@@ -1,0 +1,88 @@
+<!-- 通用错误页面 -->
+<div class="error-container">
+  <div class="error-code"><%= statusCode || 500 %></div>
+  <h1 class="error-title">服务器错误</h1>
+  <p class="error-message"><%= errorMessage || '抱歉，服务器遇到了意外错误。' %></p>
+  <div class="error-actions">
+    <a href="/" class="btn btn-primary">返回首页</a>
+    <a href="javascript:history.back()" class="btn btn-secondary">返回上一页</a>
+  </div>
+  
+  <% if (showDetails && stack) { %>
+  <div class="error-details">
+    <h3>错误详情（仅开发环境可见）：</h3>
+    <pre class="error-stack"><%= stack %></pre>
+  </div>
+  <% } %>
+</div>
+
+<style>
+  .error-container {
+    text-align: center;
+    padding: 5rem 1rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .error-code {
+    font-size: 9rem;
+    font-weight: 700;
+    color: #e67e22;
+    line-height: 1;
+    margin-bottom: 1rem;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .error-title {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+  }
+  
+  .error-message {
+    font-size: 1.25rem;
+    color: #7f8c8d;
+    margin-bottom: 2rem;
+  }
+  
+  .error-actions {
+    margin-bottom: 3rem;
+  }
+  
+  .error-actions .btn {
+    margin: 0 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+  }
+  
+  .error-details {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #ecf0f1;
+    color: #95a5a6;
+    text-align: left;
+  }
+  
+  .error-stack {
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    color: #e74c3c;
+    font-family: monospace;
+    overflow-x: auto;
+    border: 1px solid #e5e5e5;
+    white-space: pre-wrap;
+    text-align: left;
+  }
+  
+  @media (max-width: 768px) {
+    .error-code {
+      font-size: 6rem;
+    }
+    
+    .error-title {
+      font-size: 2rem;
+    }
+  }
+</style> 

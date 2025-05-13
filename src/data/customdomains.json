@@ -1,0 +1,54 @@
+{
+  "domestic": [
+    {
+      "domain": "www.baidu.com",
+      "protocol": "custom",
+      "dns": "223.5.5.5",
+      "name": "国内"
+    },
+    {
+      "domain": "*.qq.com",
+      "protocol": "custom",
+      "dns": "223.5.5.5",
+      "name": "国内"
+    },
+    {
+      "domain": "www.taobao.com",
+      "protocol": "custom",
+      "dns": "223.5.5.5",
+      "name": "国内"
+    },
+    {
+      "domain": "www.qq.com",
+      "protocol": "custom",
+      "dns": "223.5.5.5",
+      "name": "国内"
+    },
+    {
+      "domain": "www.163.com",
+      "protocol": "custom",
+      "dns": "223.5.5.5",
+      "name": "国内"
+    }
+  ],
+  "foreign": [
+    {
+      "domain": "*.google.com",
+      "protocol": "custom",
+      "dns": "8.8.8.8",
+      "name": "国外"
+    },
+    {
+      "domain": "*.facebook.com",
+      "protocol": "custom",
+      "dns": "8.8.8.8",
+      "name": "国外"
+    },
+    {
+      "domain": "*.youtube.com",
+      "protocol": "doh",
+      "dns": "223.5.5.5",
+      "name": "国外"
+    }
+  ]
+}

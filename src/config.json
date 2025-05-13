@@ -1,0 +1,214 @@
+{
+  "server": {
+    "port": 3211,
+    "host": "localhost"
+  },
+  "database": {
+    "comment": "Configure your database connection here"
+  },
+  "jwt": {
+    "secret": "your-secret-key",
+    "expiresIn": "7d"
+  },
+  "cors": {
+    "origin": "*",
+    "allowMethods": [
+      "GET",
+      "POST",
+      "PUT",
+      "DELETE",
+      "OPTIONS"
+    ],
+    "allowHeaders": [
+      "Content-Type",
+      "Authorization",
+      "Accept"
+    ]
+  },
+  "dns": {
+    "server": {
+      "port": 53,
+      "host": "0.0.0.0",
+      "tcp": true,
+      "udp": true,
+      "recursion": true
+    },
+    "cache": {
+      "enable": true,
+      "ttl": 300,
+      "maxSize": 1000,
+      "cleanupInterval": 10
+    },
+    "upstream": [
+      {
+        "server": "8.8.8.8",
+        "port": 53
+      },
+      {
+        "server": "114.114.114.114",
+        "port": 53
+      }
+    ],
+    "customRecords": {},
+    "debug": false,
+    "standard": {
+      "enable": true
+    },
+    "custom": {
+      "enable": true
+    },
+    "dot": {
+      "enable": true,
+      "servers": [
+        {
+          "host": "223.5.5.5",
+          "port": 853,
+          "servername": "dns.alidns.com",
+          "priority": 1
+        },
+        {
+          "host": "1.12.12.12",
+          "port": 853,
+          "servername": "tx",
+          "name": "1.12.12.12",
+          "priority": 2
+        },
+        {
+          "host": "1.1.1.1",
+          "port": 853,
+          "servername": "cloudflare-dns.com",
+          "priority": 3
+        }
+      ],
+      "timeout": 5000
+    },
+    "doh": {
+      "enable": true,
+      "servers": [
+        {
+          "host": "223.5.5.5",
+          "path": "/dns-query",
+          "method": "GET",
+          "protocol": "https",
+          "priority": 1
+        },
+        {
+          "host": "1.12.12.12",
+          "path": "/dns-query",
+          "method": "GET",
+          "protocol": "https",
+          "priority": 2
+        },
+        {
+          "host": "223.5.5.5",
+          "path": "/dns-query",
+          "method": "GET",
+          "protocol": "https",
+          "priority": 3
+        }
+      ],
+      "timeout": 5000
+    },
+    "doq": {
+      "enable": false,
+      "servers": [
+        {
+          "host": "1.1.1.1",
+          "port": 853,
+          "priority": 1
+        },
+        {
+          "host": "dns.adguard.com",
+          "port": 853,
+          "priority": 2
+        }
+      ],
+      "timeout": 5000
+    },
+    "defaultProtocol": "standard",
+    "fallbackOrder": [
+      "standard",
+      "dot",
+      "doh",
+      "doq"
+    ],
+    "security": {
+      "blockedDomains": [
+        "www.example.com"
+      ],
+      "allowedIPs": [
+        "0.0.0.0/0"
+      ],
+      "rateLimit": {
+        "enable": true,
+        "threshold": 1000
+      },
+      "dnssec": {
+        "enable": true
+      }
+    },
+    "logging": {
+      "level": "info",
+      "logQueries": true,
+      "logResponses": true,
+      "rotation": "daily",
+      "retention": 30
+    }
+  },
+  "app": {
+    "siteName": "DomesticDNS",
+    "description": "基于Koa2的DNS解析器项目",
+    "version": "1.0.0",
+    "env": "development"
+  },
+  "systemManagement": {
+    "enabled": true,
+    "sections": {
+      "status": {
+        "enabled": true,
+        "refreshInterval": 30000
+      },
+      "services": {
+        "enabled": true,
+        "controlEnabled": true,
+        "services": [
+          {
+            "id": "dns",
+            "name": "DNS服务",
+            "autostart": true
+          },
+          {
+            "id": "cache",
+            "name": "缓存服务",
+            "autostart": true
+          },
+          {
+            "id": "logging",
+            "name": "日志服务",
+            "autostart": true
+          }
+        ]
+      },
+      "configuration": {
+        "enabled": true,
+        "editEnabled": true
+      },
+      "updates": {
+        "enabled": true,
+        "checkInterval": 86400000,
+        "lastCheck": null
+      }
+    },
+    "access": {
+      "requireAuth": false
+    },
+    "updates": {
+      "lastCheck": "2025-05-12T10:26:06.466Z"
+    }
+  },
+  "general": {
+    "serverName": "DomesticDNS主服务器",
+    "adminEmail": "admin@example.com",
+    "language": "zh-CN"
+  }
+}

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - DomesticDNS</title>
+  <link rel="stylesheet" href="/css/icons.css">
+  <link rel="stylesheet" href="/css/fontawesome/fontawesome.css">
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/global-components.css">
+</head>
+<body class="login-page">
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <h1><span class="icon icon-shield"></span> DomesticDNS</h1>
+        <h2>管理员登录</h2>
+      </div>
+      
+      <div class="login-body">
+        <div class="alert alert-danger d-none" id="login-error">
+          <span class="icon icon-warning"></span>
+          <span id="error-message">用户名或密码错误</span>
+        </div>
+        
+        <form id="login-form">
+          <div class="form-group">
+            <label for="username">用户名</label>
+            <div class="input-group">
+              <span class="input-group-text"><span class="icon icon-user"></span></span>
+              <input type="text" class="form-control" id="username" name="username" placeholder="请输入用户名" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="password">密码</label>
+            <div class="input-group">
+              <span class="input-group-text"><span class="icon icon-lock"></span></span>
+              <input type="password" class="form-control" id="password" name="password" placeholder="请输入密码" required>
+            </div>
+          </div>
+          
+          <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="remember-me" name="remember-me">
+            <label class="form-check-label" for="remember-me">记住我</label>
+          </div>
+          
+          <div class="form-group">
+            <button type="submit" class="btn btn-primary btn-block">
+              <span class="icon icon-login"></span> 登录
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <div class="login-footer">
+
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/jquery.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const loginForm = document.getElementById('login-form');
+      const loginError = document.getElementById('login-error');
+      const errorMessage = document.getElementById('error-message');
+      
+      loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        
+        try {
+          // 隐藏之前的错误信息
+          loginError.classList.add('d-none');
+          
+          // 发送登录请求
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+          });
+          
+          const data = await response.json();
+          
+          if (!response.ok) {
+            // 显示错误信息
+            errorMessage.textContent = data.message || '登录失败，请重试';
+            loginError.classList.remove('d-none');
+            return;
+          }
+          
+          // 登录成功，重定向
+          const urlParams = new URLSearchParams(window.location.search);
+          const returnUrl = urlParams.get('returnUrl') || '/';
+          window.location.href = returnUrl;
+        } catch (error) {
+          console.error('登录请求失败:', error);
+          errorMessage.textContent = '网络错误，请稍后重试';
+          loginError.classList.remove('d-none');
+        }
+      });
+    });
+  </script>
+
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --primary-dark: #3a56d4;
+      --secondary-color: #7209b7;
+      --accent-color: #4cc9f0;
+      --success-color: #2ecc71;
+      --warning-color: #f39c12;
+      --danger-color: #e74c3c;
+      --light-color: #f8f9fa;
+      --dark-color: #212529;
+      --gray-color: #6c757d;
+      --border-color: #dee2e6;
+      --shadow-color: rgba(0, 0, 0, 0.1);
+      --gradient-start: #4361ee;
+      --gradient-end: #4cc9f0;
+    }
+    
+    body.login-page {
+      background: url('/images/logo-bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--dark-color);
+      position: relative;
+    }
+    
+    body.login-page::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(3px);
+      z-index: 0;
+    }
+    
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+    }
+    
+    .login-header {
+      padding: 25px 20px;
+      text-align: center;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: #000;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .login-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 60%);
+      transform: rotate(30deg);
+      pointer-events: none;
+    }
+    
+    .login-header h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-shadow: none;
+      color: #000;
+    }
+    
+    .login-header h2 {
+      margin: 10px 0 0;
+      font-size: 18px;
+      font-weight: 400;
+      opacity: 0.9;
+      color: #000;
+    }
+    
+    .login-body {
+      padding: 30px;
+    }
+    
+    .login-footer {
+      padding: 15px;
+      text-align: center;
+      background-color: rgba(248, 249, 250, 0.8);
+      border-top: 1px solid var(--border-color);
+      font-size: 13px;
+      color: var(--gray-color);
+    }
+    
+    .login-footer p {
+      margin: 5px 0;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #495057;
+    }
+    
+    .btn-block {
+      width: 100%;
+    }
+    
+    .d-none {
+      display: none;
+    }
+    
+    .alert {
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .alert-danger {
+      background-color: rgba(231, 76, 60, 0.1);
+      border-left: 4px solid var(--danger-color);
+      color: #c0392b;
+    }
+    
+    .alert i, .alert .icon {
+      margin-right: 10px;
+      font-size: 16px;
+    }
+    
+    .input-group {
+      display: flex;
+      width: 100%;
+      margin-bottom: 5px;
+    }
+    
+    .input-group-text {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      background-color: #f8f9fa;
+      border: 1px solid #ced4da;
+      border-right: none;
+      border-radius: 8px 0 0 8px;
+      color: #6c757d;
+    }
+    
+    /* 自定义图标样式调整 */
+    .input-group-text .icon {
+      margin: 0;
+      width: 1.2em;
+      height: 1.2em;
+      color: #6c757d;
+    }
+    
+    .login-header .icon {
+      width: 1.4em;
+      height: 1.4em;
+      vertical-align: middle;
+      margin-right: 0.3em;
+      color: #000;
+    }
+    
+    .btn .icon {
+      width: 1em;
+      height: 1em;
+      vertical-align: middle;
+      margin-right: 0.5em;
+      color: currentColor;
+    }
+    
+    .form-control {
+      flex: 1;
+      padding: 12px 15px;
+      border: 1px solid #ced4da;
+      border-radius: 0 8px 8px 0;
+      font-size: 15px;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+    }
+    
+    .form-check {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .form-check-input {
+      margin-right: 8px;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+    
+    .form-check-label {
+      color: #495057;
+      cursor: pointer;
+    }
+    
+    .btn {
+      display: inline-block;
+      font-weight: 500;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: middle;
+      user-select: none;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      line-height: 1.5;
+      border-radius: 8px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--primary-dark), var(--gradient-start));
+    }
+    
+    .btn-primary:active {
+      box-shadow: 0 2px 5px rgba(67, 97, 238, 0.2);
+    }
+    
+    /* 响应式调整 */
+    @media (max-width: 480px) {
+      .login-card {
+        max-width: 100%;
+      }
+      
+      .login-header {
+        padding: 20px 15px;
+      }
+      
+      .login-body {
+        padding: 20px;
+      }
+      
+      .btn {
+        padding: 10px 16px;
+        font-size: 15px;
+      }
+    }
+  </style>
+</body>
+</html> 

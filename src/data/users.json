@@ -1,0 +1,13 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "password": "209fc372fe9b2ba55bdf5831d4a4cdd49e8008bc013946e1e39babc8ed705bfb",
+    "salt": "0246f8b94ecbbe409967cab1759272c8",
+    "email": "admin@example.com",
+    "role": "admin",
+    "lastLogin": "2025-05-13T06:36:14.632Z",
+    "createdAt": "2025-05-11T06:57:36.235Z",
+    "updatedAt": "2025-05-11T07:51:02.595Z"
+  }
+]

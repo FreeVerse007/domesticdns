@@ -1,0 +1,897 @@
+/* DNS测试页面专用样式 */
+
+/* 确保所有元素都使用盒模型 */
+* {
+  box-sizing: border-box;
+}
+
+/* 整体布局 */
+.dns-test-wrapper {
+  background-color: var(--light-gray);
+  min-height: 100vh;
+  padding: 2rem 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.dns-test-container {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  width: 100%;
+  background-color: var(--light-gray);
+}
+
+.dns-test-header {
+  margin-bottom: 2.5rem;
+  text-align: center;
+  padding-bottom: 1.5rem;
+}
+
+.dns-test-header h1 {
+  color: var(--secondary-color);
+  margin-bottom: 0.8rem;
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+.dns-test-header p {
+  color: #6c757d;
+  max-width: 800px;
+  margin: 0 auto;
+  font-size: 1.1rem;
+}
+
+/* 表单样式增强 */
+.test-form, .test-results {
+  margin-left: 0;
+  margin-right: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.test-form {
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  margin-bottom: 3rem;
+  width: 100%;
+}
+
+.test-form:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  transform: none;
+}
+
+.test-form h2 {
+  color: var(--secondary-color);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 1.5rem;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.form-group {
+  flex: 1;
+  min-width: 200px;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--secondary-color);
+  font-size: 0.95rem;
+}
+
+.form-group small {
+  color: #6c757d;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+textarea#domainsList {
+  min-height: 120px;
+  font-family: monospace;
+  padding: 0.75rem;
+  line-height: 1.5;
+  font-size: 0.9rem;
+  color: #555;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  border-radius: 6px;
+  width: 100%;
+}
+
+textarea#domainsList:focus {
+  background-color: #fff;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+select#recordTypes {
+  height: auto;
+  background-color: #f8f9fa;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+select#recordTypes option {
+  padding: 0.5rem;
+}
+
+input[type="number"], 
+input[type="text"],
+select {
+  background-color: #f8f9fa;
+  font-size: 0.95rem;
+  height: 2.75rem;
+  padding: 0 0.75rem;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input[type="number"]:focus {
+  background-color: #fff;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.button-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  min-width: 200px;
+}
+
+button#startBtn, button#stopBtn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  font-size: 0.95rem;
+  min-width: 120px;
+}
+
+button#startBtn {
+  background-color: var(--primary-color);
+}
+
+button#startBtn:hover {
+  transform: none;
+  opacity: 0.9;
+}
+
+button#stopBtn {
+  background-color: #e74c3c;
+}
+
+button#stopBtn:hover {
+  transform: none;
+  opacity: 0.9;
+}
+
+button#stopBtn:disabled {
+  background-color: #95a5a6;
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+  color: #ecf0f1;
+  border: 1px solid #7f8c8d;
+}
+
+/* 测试结果样式 */
+.test-results {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  padding: 2.5rem;
+  margin-top: 2rem;
+  margin-bottom: 3rem;
+  width: 100%;
+}
+
+.test-results h2 {
+  color: var(--secondary-color);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 1.5rem;
+}
+
+/* 进度条 */
+.progress-container {
+  margin-bottom: 2rem;
+}
+
+.progress-container h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  color: var(--secondary-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.progress-bar {
+  height: 0.75rem;
+  background-color: #e9ecef;
+  border-radius: 50px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color) 0%, #2ecc71 100%);
+  border-radius: 50px;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+/* 统计卡片 */
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.stat-card {
+  background-color: #ffffff;
+  padding: 1.8rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  text-align: center;
+  border: 1px solid #f0f0f0;
+}
+
+.stat-card:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.stat-card h3 {
+  font-size: 0.9rem;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: #7f8c8d;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+/* 图表容器 */
+.chart-container {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  margin-bottom: 3rem;
+  border: 1px solid #f0f0f0;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 400px; /* 确保图表有足够的高度 */
+  position: relative; /* 确保内部canvas的相对定位正确 */
+  overflow: hidden; /* 防止溢出 */
+}
+
+.chart-container h3 {
+  font-size: 1.1rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--secondary-color);
+  font-weight: 600;
+}
+
+/* 图表canvas样式 */
+.chart-container canvas {
+  width: 600px !important; /* 强制固定宽度 */
+  height: 300px !important; /* 强制固定高度 */
+  margin: 0 auto !important;
+  display: block !important;
+  max-width: 100% !important; /* 确保不溢出容器 */
+  border: 1px solid #f0f0f0; /* 添加边框便于调试 */
+}
+
+/* 查询表格 */
+.recent-queries {
+  margin-top: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 1rem;
+}
+
+.recent-queries h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.recent-queries table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.recent-queries th {
+  background: #f5f5f5;
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  font-weight: 500;
+}
+
+.recent-queries td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.recent-queries .loading {
+  text-align: center;
+  color: #777;
+  padding: 1rem;
+}
+
+.recent-queries .success {
+  color: #28a745;
+}
+
+.recent-queries .error {
+  color: #dc3545;
+}
+
+/* DNS测试详细结果样式 */
+.dns-test-details {
+  margin-top: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 1rem;
+}
+
+.dns-test-details h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.dns-test-details h4 {
+  margin-top: 0.5rem;
+  color: #555;
+  font-size: 1rem;
+}
+
+.details-section {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.detail-card {
+  flex: 1 1 calc(50% - 1rem);
+  min-width: 300px;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 1rem;
+  background: #fafafa;
+}
+
+.detail-card.full-width {
+  flex: 1 1 100%;
+}
+
+/* 标签页样式 */
+.dns-detail-tabs {
+  margin-top: 1rem;
+}
+
+.tab-header {
+  display: flex;
+  border-bottom: 2px solid #ddd;
+}
+
+.tab-button {
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #777;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.tab-button:hover {
+  color: #333;
+}
+
+.tab-button.active {
+  color: #0066cc;
+  border-bottom: 2px solid #0066cc;
+  margin-bottom: -2px;
+}
+
+.tab-content {
+  padding: 1rem 0;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+/* 详情表格样式 */
+.summary-table,
+.domain-table,
+.error-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.summary-table th,
+.domain-table th,
+.error-table th {
+  background: #f5f5f5;
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  font-weight: 500;
+}
+
+.summary-table td,
+.domain-table td,
+.error-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.summary-table tr:nth-child(even),
+.domain-table tr:nth-child(even),
+.error-table tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+/* 查询详情按钮和弹窗样式 */
+.detail-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.detail-btn:hover {
+  background-color: #2980b9;
+  transform: translateY(-1px);
+}
+
+.query-detail-info {
+  position: absolute;
+  z-index: 10;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 15px;
+  width: 500px;
+  max-width: calc(100vw - 40px);
+  max-height: 80vh;
+  overflow-y: auto;
+  top: 100%;
+  left: 0;
+}
+
+.detail-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.detail-item {
+  margin-bottom: 8px;
+  display: flex;
+}
+
+.detail-label {
+  font-weight: 500;
+  color: #555;
+  min-width: 100px;
+  margin-right: 10px;
+}
+
+.detail-value {
+  flex: 1;
+}
+
+.detail-value pre {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 0.85rem;
+  margin: 5px 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.close-detail-btn {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 6px 12px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.close-detail-btn:hover {
+  background-color: #e0e0e0;
+}
+
+td {
+  position: relative;
+}
+
+/* 响应式适配 */
+@media (min-width: 1800px) {
+  .dns-test-wrapper {
+    padding: 3rem 0;
+  }
+  
+  .dns-test-container {
+    max-width: 1800px;
+    padding: 2rem;
+    background-color: var(--light-gray);
+  }
+  
+  .form-row {
+    gap: 2rem;
+  }
+  
+  .test-form, .test-results {
+    padding: 2.5rem;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  
+  .form-group label {
+    font-size: 1rem;
+  }
+  
+  textarea#domainsList {
+    min-height: 150px;
+  }
+}
+
+@media (max-width: 1799px) {
+  .dns-test-container {
+    max-width: 1600px;
+    padding: 1.5rem;
+    background-color: var(--light-gray);
+  }
+  
+  .test-form, .test-results {
+    padding: 2rem;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 1600px) {
+  .dns-test-container {
+    max-width: 1400px;
+    padding: 1rem;
+    background-color: var(--light-gray);
+  }
+  
+  .test-form, .test-results {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .dns-test-wrapper {
+    padding: 1rem 0;
+  }
+  
+  .dns-test-container {
+    padding: 0.75rem;
+    background-color: var(--light-gray);
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .form-group {
+    width: 100%;
+  }
+  
+  .stats-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .test-form, .test-results {
+    padding: 1.5rem;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  
+  .button-group {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  button#startBtn, button#stopBtn {
+    min-width: 100px;
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .dns-test-wrapper {
+    padding: 0.5rem 0;
+  }
+  
+  .dns-test-container {
+    padding: 0.5rem;
+    background-color: var(--light-gray);
+  }
+  
+  .test-form, .test-results {
+    padding: 1rem;
+  }
+  
+  .stats-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .dns-test-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .recent-queries td, .recent-queries th {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Add styles for server stats in advanced DNS test page */
+.server-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.server-stat {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.server-stat:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.server-stat h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.server-stat .progress-bar {
+  height: 10px;
+  background-color: #ecf0f1;
+  border-radius: 5px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+
+.server-stat .progress-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.server-stat:nth-child(1) .progress-fill {
+  background-color: #3498db;
+}
+
+.server-stat:nth-child(2) .progress-fill {
+  background-color: #2ecc71;
+}
+
+.server-stat .stat-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* 错误弹窗样式 */
+.error-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.error-dialog.show {
+  opacity: 1;
+}
+
+.error-dialog-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 500px;
+  max-width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  animation: dialogSlideIn 0.3s ease;
+}
+
+@keyframes dialogSlideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.error-dialog-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+}
+
+.error-dialog-header h3 {
+  margin: 0;
+  color: #dc3545;
+  font-size: 1.2rem;
+}
+
+.error-dialog-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6c757d;
+  line-height: 1;
+  padding: 0 5px;
+}
+
+.error-dialog-body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.error-message {
+  font-size: 1rem;
+  margin-bottom: 15px;
+  color: #343a40;
+  font-weight: 500;
+}
+
+.error-details {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.error-details p {
+  margin: 10px 0;
+}
+
+.error-details ul {
+  padding-left: 20px;
+  margin: 10px 0;
+}
+
+.error-details li {
+  margin-bottom: 5px;
+}
+
+.error-dialog-footer {
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.error-dialog-retry,
+.error-dialog-cancel {
+  padding: 8px 15px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.error-dialog-retry {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.error-dialog-retry:hover {
+  background-color: #2980b9;
+  transform: translateY(-1px);
+}
+
+.error-dialog-cancel {
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+.error-dialog-cancel:hover {
+  background-color: #e9ecef;
+} 

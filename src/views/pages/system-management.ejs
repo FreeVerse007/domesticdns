@@ -1,0 +1,2604 @@
+<!-- 系统管理页面 -->
+<link rel="stylesheet" href="/css/global-components.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="system-mgmt-wrapper">
+  <div class="system-mgmt-container">
+    <!-- 系统状态总览部分 -->
+    <div class="system-status card" id="systemStatusSection">
+      <h2>系统状态</h2>
+      
+      <div class="stats-container">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <span class="icon icon-server"></span>
+          </div>
+          <div class="stat-info">
+            <div class="stat-title">运行时间</div>
+            <div class="stat-value" id="uptime">加载中...</div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">
+            <span class="icon icon-cpu"></span>
+          </div>
+          <div class="stat-info">
+            <div class="stat-title">CPU使用率</div>
+            <div class="stat-value" id="cpuUsage">加载中...</div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">
+            <span class="icon icon-memory"></span>
+          </div>
+          <div class="stat-info">
+            <div class="stat-title">内存使用</div>
+            <div class="stat-value" id="memoryUsage">加载中...</div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">
+            <span class="icon icon-storage"></span>
+          </div>
+          <div class="stat-info">
+            <div class="stat-title">磁盘使用</div>
+            <div class="stat-value" id="diskUsage">加载中...</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="chart-section" style="flex: 1;">
+          <h3>CPU历史负载</h3>
+          <div class="chart-wrapper">
+            <canvas id="cpuChart" class="chart-content"></canvas>
+          </div>
+        </div>
+        
+        <div class="chart-section" style="flex: 1;">
+          <h3>内存历史使用</h3>
+          <div class="chart-wrapper">
+            <canvas id="memoryChart" class="chart-content"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 系统配置部分 -->
+    <div class="system-config card">
+      <h2>系统配置</h2>
+      
+      <div class="config-tabs">
+        <div class="tab-header">
+          <button class="tab-btn active" data-tab="general">常规设置</button>
+          <button class="tab-btn" data-tab="dns">DNS设置</button>
+          <button class="tab-btn" data-tab="cache">缓存设置</button>
+          <button class="tab-btn" data-tab="security">安全设置</button>
+          <button class="tab-btn" data-tab="logging">日志设置</button>
+          <button class="tab-btn" data-tab="debug">调试日志</button>
+        </div>
+        
+        <div class="tab-content">
+          <!-- 常规设置选项卡 -->
+          <div class="tab-pane active" id="general-tab">
+            <div class="form-group">
+              <label for="serverName">服务器名称</label>
+              <input type="text" id="serverName" class="form-control" value="DomesticDNS主服务器">
+            </div>
+            
+            <div class="form-group">
+              <label for="adminEmail">管理员邮箱</label>
+              <input type="email" id="adminEmail" class="form-control" value="admin@example.com">
+            </div>
+            
+            <div class="form-group">
+              <label for="webPort">Web端口</label>
+              <input type="number" id="webPort" class="form-control" value="80">
+            </div>
+            
+            <div class="form-group">
+              <label for="language">界面语言</label>
+              <select id="language" class="form-control">
+                <option value="zh-CN" selected>简体中文</option>
+                <option value="en-US">English</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- DNS设置选项卡 -->
+          <div class="tab-pane" id="dns-tab">
+            <div class="form-group">
+              <div class="actions-bar" style="margin-bottom: 1rem;">
+                <!-- 移除了刷新DNS设置按钮 -->
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="dnsPort">DNS端口</label>
+              <input type="number" id="dnsPort" class="form-control" value="53">
+            </div>
+            
+            <div class="form-group">
+              <label for="dnsProtocol">DNS协议</label>
+              <select id="dnsProtocol" class="form-control">
+                <option value="both" selected>UDP和TCP</option>
+                <option value="udp">仅UDP</option>
+                <option value="tcp">仅TCP</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" id="enableRecursion" checked> 启用递归查询
+                </label>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="upstreamDNS">上游DNS服务器</label>
+              <input type="text" id="upstreamDNS" class="form-control" value="8.8.8.8, 114.114.114.114">
+            </div>
+          </div>
+          
+          <!-- 缓存设置选项卡 (新增) -->
+          <div class="tab-pane" id="cache-tab">
+            <div class="form-group">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" id="enableCache" checked> 启用DNS缓存
+                </label>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="cacheTTL">默认缓存TTL (秒)</label>
+              <input type="number" id="cacheTTL" class="form-control" value="300">
+              <small class="form-text text-muted">DNS记录在缓存中保存的默认时间</small>
+            </div>
+            
+            <div class="form-group">
+              <label for="cacheMaxSize">最大缓存条目数</label>
+              <input type="number" id="cacheMaxSize" class="form-control" value="1000">
+              <small class="form-text text-muted">缓存中可以存储的最大DNS记录数量</small>
+            </div>
+            
+            <div class="form-group">
+              <label for="cacheCleanupInterval">清理间隔 (分钟)</label>
+              <input type="number" id="cacheCleanupInterval" class="form-control" value="10">
+              <small class="form-text text-muted">自动清理过期缓存的时间间隔</small>
+            </div>
+            
+            <div class="cache-stats-section">
+              <h3>缓存统计</h3>
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <div class="stat-label">缓存记录数</div>
+                  <div class="stat-value" id="cacheSize">0</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">缓存命中数</div>
+                  <div class="stat-value" id="cacheHits">0</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">缓存未命中数</div>
+                  <div class="stat-value" id="cacheMisses">0</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">命中率</div>
+                  <div class="stat-value" id="cacheHitRate">0%</div>
+                </div>
+              </div>
+              <div class="cache-actions">
+                <button class="btn btn-sm btn-warning" id="refreshCacheStats">刷新统计</button>
+                <button class="btn btn-sm btn-danger" id="clearCacheStats">清空缓存</button>
+              </div>
+            </div>
+            
+            <div class="form-group mt-3">
+              <h3>域名缓存管理</h3>
+              <div class="domain-cache-control">
+                <input type="text" id="domainToClear" class="form-control" placeholder="输入要清除缓存的域名">
+                <select id="recordTypeToClear" class="form-control">
+                  <option value="">所有记录类型</option>
+                  <option value="A">A</option>
+                  <option value="AAAA">AAAA</option>
+                  <option value="CNAME">CNAME</option>
+                  <option value="MX">MX</option>
+                  <option value="TXT">TXT</option>
+                  <option value="NS">NS</option>
+                </select>
+                <button class="btn btn-warning" id="clearDomainCache">清除域名缓存</button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 安全设置选项卡 -->
+          <div class="tab-pane" id="security-tab">
+            <div class="form-group">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" id="enableDNSSEC"> 启用DNSSEC
+                </label>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" id="enableRateLimit" checked> 启用请求速率限制
+                </label>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="rateLimitThreshold">速率限制阈值 (请求/分钟)</label>
+              <input type="number" id="rateLimitThreshold" class="form-control" value="1000">
+            </div>
+            
+            <div class="form-group">
+              <label for="allowedIPs">允许的IP地址</label>
+              <textarea id="allowedIPs" class="form-control" rows="3">0.0.0.0/0</textarea>
+              <small class="form-text text-muted">每行一个IP或CIDR格式</small>
+            </div>
+            
+            <div class="form-group">
+              <label for="blockedDomains">拦截的域名</label>
+              <textarea id="blockedDomains" class="form-control" rows="3">example.com
+malware.com
+phishing.xyz</textarea>
+              <small class="form-text text-muted">每行一个域名</small>
+            </div>
+          </div>
+          
+          <!-- 日志设置选项卡 -->
+          <div class="tab-pane" id="logging-tab">
+            <div class="form-group">
+              <div class="actions-bar" style="margin-bottom: 1rem;">
+                <!-- 移除了刷新日志设置按钮 -->
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="logLevel">日志级别</label>
+              <select id="logLevel" class="form-control">
+                <option value="debug">Debug</option>
+                <option value="info" selected>Info</option>
+                <option value="warn">Warning</option>
+                <option value="error">Error</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" id="logQueries" checked> 记录DNS查询
+                </label>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" id="logResponses" checked> 记录DNS响应
+                </label>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" id="enableDebug"> 启用调试模式
+                </label>
+              </div>
+              <small class="form-text text-muted">开启后将记录更详细的调试信息，可能会影响性能</small>
+            </div>
+            
+            <div class="form-group">
+              <label for="logRotation">日志轮换周期</label>
+              <select id="logRotation" class="form-control">
+                <option value="daily" selected>每天</option>
+                <option value="weekly">每周</option>
+                <option value="monthly">每月</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="logRetention">日志保留时间 (天)</label>
+              <input type="number" id="logRetention" class="form-control" value="30">
+            </div>
+          </div>
+
+          <!-- 调试日志选项卡 -->
+          <div class="tab-pane" id="debug-tab">
+            <div class="form-group">
+              <h3>操作日志</h3>
+              <p>此页面显示帮助诊断配置保存问题。</p>
+              
+              <div class="actions-bar">
+                <button class="btn btn-primary" id="refreshLogsBtn">刷新日志</button>
+                <button class="btn btn-secondary" id="downloadLogsBtn">下载日志</button>
+                
+                <!-- 日志文件管理部分 -->
+                <div class="dropdown log-file-dropdown">
+                  <button class="btn btn-info dropdown-toggle" type="button" id="logFileDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    日志文件
+                  </button>
+                  <div class="dropdown-menu" id="logFilesMenu" aria-labelledby="logFileDropdown">
+                    <a class="dropdown-item" href="#" data-file="current">当前日志文件</a>
+                    <div class="dropdown-divider"></div>
+                    <!-- 历史日志文件将在这里动态添加 -->
+                  </div>
+                </div>
+              </div>
+              
+              <div class="log-rotation-info">
+                <div class="info-box">
+                  <span class="info-title">当前日志文件:</span>
+                  <span class="info-value" id="currentLogFile">加载中...</span>
+                </div>
+                <div class="info-box">
+                  <span class="info-title">历史日志文件数:</span>
+                  <span class="info-value" id="logFileCount">加载中...</span>
+                </div>
+                <div class="info-box">
+                  <span class="info-title">日志保留策略:</span>
+                  <span class="info-value">最多保留30天</span>
+                </div>
+              </div>
+              
+              <div class="log-filter-bar">
+                <input type="text" id="logSearchInput" class="form-control" placeholder="搜索日志...">
+                <select id="logTypeFilter" class="form-control">
+                  <option value="all">所有日志</option>
+                  <option value="config">配置操作</option>
+                  <option value="error">错误</option>
+                  <option value="restart">重启操作</option>
+                </select>
+              </div>
+              
+              <div class="log-container">
+                <table class="log-table">
+                  <thead>
+                    <tr>
+                      <th width="20%">时间</th>
+                      <th width="30%">操作</th>
+                      <th width="50%">详情</th>
+                    </tr>
+                  </thead>
+                  <tbody id="logTableBody">
+                    <tr>
+                      <td colspan="3" class="loading-placeholder">加载日志中...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <div class="log-detail-panel" id="logDetailPanel">
+                <div class="panel-header">
+                  <h4>日志详情</h4>
+                  <button class="close-btn" id="closeLogDetailBtn">&times;</button>
+                </div>
+                <pre id="logDetailContent">选择日志条目查看详情</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button class="btn btn-primary" id="saveConfigBtn">保存配置</button>
+        <button class="btn btn-secondary" id="resetConfigBtn">重置</button>
+      </div>
+    </div>
+    
+    <!-- 系统更新部分 -->
+    <div class="system-update card">
+      <h2>系统更新</h2>
+      
+      <div class="system-info">
+        <div class="info-item">
+          <div class="info-label">当前版本</div>
+          <div class="info-value" id="currentVersion">v1.2.3</div>
+        </div>
+        
+        <div class="info-item">
+          <div class="info-label">最新版本</div>
+          <div class="info-value" id="latestVersion">点击检查更新按钮获取</div>
+        </div>
+        
+        <div class="info-item">
+          <div class="info-label">上次检查</div>
+          <div class="info-value" id="lastCheck">从未检查</div>
+        </div>
+      </div>
+      
+      <div class="update-actions">
+        <button class="btn btn-primary" id="checkUpdateBtn">检查更新</button>
+        <button class="btn btn-success" id="doUpdateBtn" disabled>升级到最新版</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* 系统管理页面特定样式 */
+  .system-mgmt-wrapper {
+    width: 100%;
+  }
+  
+  .system-mgmt-container {
+    width: 100%;
+  }
+  
+  .card {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+  
+  .card h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+  }
+  
+  .stats-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .stat-card {
+    flex: 1;
+    min-width: 200px;
+    background-color: white;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+  }
+  
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+    background-color: var(--light-gray);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+  }
+  
+  .stat-icon .icon {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+  }
+  
+  .stat-info {
+    flex: 1;
+  }
+  
+  .stat-title {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+  }
+  
+  .stat-value {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--secondary-color);
+  }
+  
+  .chart-section {
+    background-color: white;
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .chart-section h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: var(--secondary-color);
+  }
+  
+  .chart-wrapper {
+    width: 100%;
+    height: 200px;
+  }
+  
+  .chart-content {
+    width: 100%;
+    height: 100%;
+    background-color: var(--light-gray);
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* 服务控制样式 */
+  .service-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .service-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background-color: var(--light-gray);
+    border-radius: var(--border-radius);
+  }
+  
+  .service-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .service-name {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+  }
+  
+  .status-running {
+    background-color: var(--success-color);
+    color: white;
+  }
+  
+  .status-stopped {
+    background-color: var(--error-color);
+    color: white;
+  }
+  
+  .status-warning {
+    background-color: var(--warning-color);
+    color: white;
+  }
+  
+  .service-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  /* 配置选项卡样式 */
+  .config-tabs {
+    margin-bottom: 1rem;
+  }
+  
+  .tab-header {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+  }
+  
+  .tab-btn {
+    padding: 0.5rem 1rem;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    color: #666;
+    position: relative;
+  }
+  
+  .tab-btn.active {
+    color: var(--primary-color);
+  }
+  
+  .tab-btn.active:after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--primary-color);
+  }
+  
+  .tab-content {
+    min-height: 300px;
+  }
+  
+  .tab-pane {
+    display: none;
+  }
+  
+  .tab-pane.active {
+    display: block;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+  }
+  
+  .checkbox {
+    display: flex;
+    align-items: center;
+  }
+  
+  .checkbox input {
+    margin-right: 0.5rem;
+  }
+  
+  .form-text {
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+  
+  .form-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+  
+  /* 系统更新样式 */
+  .system-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .info-item {
+    flex: 1;
+    min-width: 200px;
+    background-color: var(--light-gray);
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+  }
+  
+  .info-label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+  }
+  
+  .info-value {
+    font-weight: bold;
+  }
+  
+  .update-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  /* 缓存统计样式 */
+  .cache-stats-section {
+    margin-top: 1.5rem;
+    background-color: var(--light-gray);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+  }
+  
+  .cache-stats-section h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: var(--secondary-color);
+  }
+  
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .stat-item {
+    background-color: white;
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    box-shadow: var(--shadow-xs);
+  }
+  
+  .stat-label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+  }
+  
+  .cache-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+  
+  .domain-cache-control {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    .stats-container {
+      flex-direction: column;
+    }
+    
+    .form-row {
+      flex-direction: column;
+    }
+    
+    .chart-section {
+      margin-bottom: 1rem;
+    }
+    
+    .tab-header {
+      flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+      flex: 1;
+      text-align: center;
+      padding: 0.5rem;
+    }
+  }
+
+  /* 调试日志样式 */
+  .log-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-top: 1rem;
+    position: relative;
+    background-color: white;
+  }
+  
+  .log-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  
+  .log-table th,
+  .log-table td {
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .log-table th {
+    background-color: var(--light-gray);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 2px solid var(--border-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    opacity: 1;
+  }
+  
+  .log-table tr:hover {
+    background-color: var(--light-gray);
+    cursor: pointer;
+  }
+  
+  .log-row-error {
+    background-color: rgba(255, 0, 0, 0.05);
+  }
+  
+  .log-row-restart {
+    background-color: rgba(0, 128, 0, 0.05);
+  }
+  
+  .loading-placeholder {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+  }
+  
+  .actions-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .log-filter-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .log-filter-bar input,
+  .log-filter-bar select {
+    flex: 1;
+  }
+  
+  .log-detail-panel {
+    margin-top: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    max-height: 300px;
+    display: none;
+    background-color: white;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .log-detail-panel.active {
+    display: block;
+  }
+  
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background-color: var(--light-gray);
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .panel-header h4 {
+    margin: 0;
+  }
+  
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+  
+  #logDetailContent {
+    padding: 1rem;
+    margin: 0;
+    overflow: auto;
+    max-height: 250px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 0.9rem;
+    background-color: #f8f9fa;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+  }
+  
+  /* 警告框样式 */
+  .alert {
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius);
+  }
+  
+  .alert-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+  }
+  
+  .alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+  }
+  
+  .alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+  }
+  
+  .alert-warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+  }
+  
+  .fade-out {
+    opacity: 0;
+    transition: opacity 1s;
+  }
+  
+  /* 日志轮换相关样式 */
+  .log-file-dropdown {
+    margin-left: 0.5rem;
+  }
+  
+  .dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  
+  .dropdown-item.active {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .log-rotation-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 1rem 0;
+    background-color: var(--light-gray);
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+  }
+  
+  .info-box {
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .info-title {
+    font-weight: bold;
+    color: var(--secondary-color);
+    margin-right: 0.5rem;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 图表相关变量
+    let cpuChart = null;
+    let memoryChart = null;
+    const cpuData = {
+      labels: [],
+      datasets: [{
+        label: 'CPU使用率 (%)',
+        data: [],
+        borderColor: '#4e73df',
+        backgroundColor: 'rgba(78, 115, 223, 0.1)',
+        borderWidth: 2,
+        pointRadius: 2,
+        lineTension: 0.2,
+        fill: true
+      }]
+    };
+    const memoryData = {
+      labels: [],
+      datasets: [{
+        label: '内存使用率 (%)',
+        data: [],
+        borderColor: '#1cc88a',
+        backgroundColor: 'rgba(28, 200, 138, 0.1)',
+        borderWidth: 2,
+        pointRadius: 2,
+        lineTension: 0.2,
+        fill: true
+      }]
+    };
+    
+    // 初始化图表
+    function initCharts() {
+      // 检查是否已加载Chart.js
+      if (typeof Chart === 'undefined') {
+        // 如果没有加载Chart.js，则动态加载
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        script.onload = createCharts;
+        document.head.appendChild(script);
+      } else {
+        createCharts();
+      }
+    }
+    
+    // 创建图表
+    function createCharts() {
+      const cpuCtx = document.getElementById('cpuChart').getContext('2d');
+      const memoryCtx = document.getElementById('memoryChart').getContext('2d');
+      
+      cpuChart = new Chart(cpuCtx, {
+        type: 'line',
+        data: cpuData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                callback: function(value) {
+                  return value + '%';
+                }
+              }
+            },
+            x: {
+              display: true,
+              title: {
+                display: true,
+                text: '时间'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+      
+      memoryChart = new Chart(memoryCtx, {
+        type: 'line',
+        data: memoryData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                callback: function(value) {
+                  return value + '%';
+                }
+              }
+            },
+            x: {
+              display: true,
+              title: {
+                display: true,
+                text: '时间'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+    }
+    
+    // 加载系统状态数据
+    function loadSystemStatus() {
+      fetch('/api/system/status')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const statusData = data.data;
+            document.getElementById('uptime').textContent = statusData.uptime;
+            document.getElementById('cpuUsage').textContent = `${statusData.cpuUsage.overall}%`;
+            document.getElementById('memoryUsage').textContent = `${statusData.memory.used} / ${statusData.memory.total}`;
+            document.getElementById('diskUsage').textContent = `${statusData.disk.used} / ${statusData.disk.total}`;
+            
+            // 更新图表数据
+            updateCharts(statusData.cpuUsage.overall, statusData.memory.usedPercent);
+          } else {
+            console.error('加载系统状态失败:', data.message);
+          }
+        })
+        .catch(error => {
+          console.error('加载系统状态出错:', error);
+        });
+    }
+    
+    // 更新图表数据
+    function updateCharts(cpuUsage, memoryUsage) {
+      if (!cpuChart || !memoryChart) return;
+      
+      const now = new Date();
+      const timeStr = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+      
+      // 最多显示20个数据点
+      if (cpuData.labels.length > 20) {
+        cpuData.labels.shift();
+        cpuData.datasets[0].data.shift();
+        memoryData.labels.shift();
+        memoryData.datasets[0].data.shift();
+      }
+      
+      // 添加新数据
+      cpuData.labels.push(timeStr);
+      cpuData.datasets[0].data.push(cpuUsage);
+      memoryData.labels.push(timeStr);
+      memoryData.datasets[0].data.push(memoryUsage);
+      
+      // 更新图表
+      cpuChart.update();
+      memoryChart.update();
+    }
+    
+    // 初始化图表
+    initCharts();
+    
+    // 初始加载
+    loadSystemStatus();
+    
+    // 设置定时刷新，每5秒更新一次
+    const statusRefreshInterval = setInterval(loadSystemStatus, 5000);
+    
+    // 页面离开时清除定时器
+    window.addEventListener('beforeunload', function() {
+      clearInterval(statusRefreshInterval);
+    });
+    
+    // 标签切换功能
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        // 删除所有tabBtn上的active类
+        tabBtns.forEach(b => b.classList.remove('active'));
+        // 删除所有tabPane上的active类
+        tabPanes.forEach(p => p.classList.remove('active'));
+        
+        // 给当前按钮添加active类
+        this.classList.add('active');
+        
+        // 获取对应的tab id并激活对应的面板
+        const tabId = this.getAttribute('data-tab');
+        document.getElementById(`${tabId}-tab`).classList.add('active');
+        
+        // 如果切换到安全设置选项卡，刷新安全设置
+        if (tabId === 'security') {
+          loadSecuritySettings();
+        }
+        
+        // 如果切换到DNS设置选项卡，刷新DNS设置
+        if (tabId === 'dns') {
+          loadDnsSettings();
+        }
+        
+        // 如果切换到缓存设置选项卡，刷新缓存统计
+        if (tabId === 'cache') {
+          loadCacheStats();
+        }
+        
+        // 如果切换到日志设置选项卡，刷新日志设置
+        if (tabId === 'logging') {
+          loadLoggingSettings();
+        }
+      });
+    });
+    
+    // 加载DNS设置
+    function loadDnsSettings() {
+      fetch('/api/system/settings')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const config = data.data;
+            
+            // 设置DNS端口
+            if (config.dns.server && config.dns.server.port) {
+              document.getElementById('dnsPort').value = config.dns.server.port;
+            }
+            
+            // 设置DNS协议
+            if (config.dns.server) {
+              const tcpEnabled = config.dns.server.tcp;
+              const udpEnabled = config.dns.server.udp;
+              
+              if (tcpEnabled && udpEnabled) {
+                document.getElementById('dnsProtocol').value = 'both';
+              } else if (tcpEnabled && !udpEnabled) {
+                document.getElementById('dnsProtocol').value = 'tcp';
+              } else if (!tcpEnabled && udpEnabled) {
+                document.getElementById('dnsProtocol').value = 'udp';
+              }
+            }
+            
+            // 设置递归查询开关
+            // 这里假设配置中有recursion字段
+            if (config.dns.server && typeof config.dns.server.recursion === 'boolean') {
+              document.getElementById('enableRecursion').checked = config.dns.server.recursion;
+            }
+            
+            // 设置上游DNS服务器
+            if (config.dns.upstream && Array.isArray(config.dns.upstream)) {
+              const upstreamText = config.dns.upstream
+                .map(server => {
+                  if (server.port === 53) {
+                    return server.server;
+                  } else {
+                    return `${server.server}:${server.port}`;
+                  }
+                })
+                .join(', ');
+              
+              document.getElementById('upstreamDNS').value = upstreamText;
+            }
+            
+            // 加载拦截域名列表
+            if (config.dns.security && Array.isArray(config.dns.security.blockedDomains)) {
+              const blockedDomainsText = config.dns.security.blockedDomains.join('\n');
+              document.getElementById('blockedDomains').value = blockedDomainsText;
+            }
+          } else {
+            console.error('加载DNS设置失败:', data.message);
+          }
+        })
+        .catch(error => {
+          console.error('加载DNS设置出错:', error);
+        });
+    }
+    
+    // 加载DNS缓存统计数据
+    function loadCacheStats() {
+      fetch('/api/dns/cache/status')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const stats = data.data;
+            document.getElementById('cacheSize').textContent = stats.size || 0;
+            document.getElementById('cacheHits').textContent = stats.hits || 0;
+            document.getElementById('cacheMisses').textContent = stats.misses || 0;
+            document.getElementById('cacheHitRate').textContent = stats.hitRate || '0%';
+            
+            // 同时获取和显示缓存配置
+            if (data.config) {
+              document.getElementById('enableCache').checked = data.config.enable !== false;
+              
+              if (data.config.ttl) {
+                document.getElementById('cacheTTL').value = data.config.ttl;
+              }
+              
+              if (data.config.maxSize) {
+                document.getElementById('cacheMaxSize').value = data.config.maxSize;
+              }
+              
+              if (data.config.cleanupInterval !== undefined) {
+                document.getElementById('cacheCleanupInterval').value = data.config.cleanupInterval;
+              }
+            }
+          } else {
+            console.error('加载缓存统计失败:', data.message);
+          }
+        })
+        .catch(error => {
+          console.error('加载缓存统计出错:', error);
+        });
+    }
+    
+    // 清空DNS缓存
+    function clearDnsCache() {
+      if (confirm('确定要清空DNS缓存吗？这将删除所有缓存记录。')) {
+        fetch('/api/dns/cache/clear', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert(data.message || '缓存已清空');
+              loadCacheStats(); // 刷新统计
+            } else {
+              alert('清空缓存失败: ' + (data.message || '未知错误'));
+            }
+          })
+          .catch(error => {
+            alert('清空缓存出错: ' + error.message);
+          });
+      }
+    }
+    
+    // 清除特定域名的缓存
+    function clearDomainCache() {
+      const domain = document.getElementById('domainToClear').value.trim();
+      if (!domain) {
+        alert('请输入要清除缓存的域名');
+        return;
+          }
+      
+      const type = document.getElementById('recordTypeToClear').value;
+      
+      fetch('/api/dns/cache/remove', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ domain, type })
+      })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message || (data.success ? '域名缓存已清除' : '清除域名缓存失败'));
+          if (data.success) {
+            loadCacheStats(); // 刷新统计
+          }
+        })
+        .catch(error => {
+          alert('清除域名缓存出错: ' + error.message);
+        });
+    }
+    
+    // 保存DNS缓存配置
+    function saveCacheConfig() {
+      // 显示保存中状态
+      const saveBtn = document.getElementById('saveConfigBtn');
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = '保存中...';
+      saveBtn.disabled = true;
+      
+      // 添加状态指示器到缓存选项卡
+      const statusDiv = document.createElement('div');
+      statusDiv.id = 'cacheSaveStatus';
+      statusDiv.className = 'alert alert-info';
+      statusDiv.textContent = '正在保存缓存设置...';
+      const cacheTab = document.getElementById('cache-tab');
+      if (cacheTab.querySelector('#cacheSaveStatus')) {
+        cacheTab.querySelector('#cacheSaveStatus').remove();
+      }
+      cacheTab.prepend(statusDiv);
+      
+      const enable = document.getElementById('enableCache').checked;
+      const ttl = parseInt(document.getElementById('cacheTTL').value);
+      const maxSize = parseInt(document.getElementById('cacheMaxSize').value);
+      const cleanupInterval = parseInt(document.getElementById('cacheCleanupInterval').value);
+      
+      // 记录当前保存的值，便于调试
+      console.log('保存的缓存设置:', { 
+        enable, 
+        ttl, 
+        maxSize,
+        cleanupInterval
+      });
+      
+      fetch('/api/dns/cache/configure', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          enable, 
+          ttl, 
+          maxSize,
+          cleanupInterval
+        })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+          // 更新状态指示器
+          statusDiv.className = 'alert alert-success';
+          statusDiv.innerHTML = `
+            <strong>成功!</strong> DNS缓存配置已保存并应用。
+            <div class="mt-2">
+              <small>缓存状态: ${enable ? '已启用' : '已禁用'}</small><br>
+              <small>默认TTL: ${ttl}秒</small><br>
+              <small>最大缓存条目: ${maxSize}条</small><br>
+              <small>清理间隔: ${cleanupInterval}分钟</small>
+            </div>
+          `;
+          
+          // 5秒后淡出状态消息
+          setTimeout(() => {
+            if (statusDiv.parentNode) {
+              statusDiv.classList.add('fade-out');
+              setTimeout(() => {
+                if (statusDiv.parentNode) {
+                  statusDiv.remove();
+                }
+              }, 1000);
+            }
+          }, 5000);
+
+          // 刷新缓存统计
+          loadCacheStats();
+          } else {
+          // 更新状态指示器为错误
+          statusDiv.className = 'alert alert-danger';
+          statusDiv.innerHTML = `
+            <strong>错误!</strong> 保存缓存配置失败：${data.message || '未知错误'}
+          `;
+      }
+        })
+        .catch(error => {
+        // 更新状态指示器为错误
+        statusDiv.className = 'alert alert-danger';
+        statusDiv.innerHTML = `
+          <strong>错误!</strong> 保存缓存配置出错: ${error.message}
+        `;
+      })
+      .finally(() => {
+        // 恢复按钮状态
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+        });
+    }
+    
+    // 保存安全配置
+    function saveSecurityConfig() {
+      // 显示保存中状态
+      const saveBtn = document.getElementById('saveConfigBtn');
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = '保存中...';
+      saveBtn.disabled = true;
+      
+      // 添加状态指示器到安全选项卡
+      const statusDiv = document.createElement('div');
+      statusDiv.id = 'securitySaveStatus';
+      statusDiv.className = 'alert alert-info';
+      statusDiv.textContent = '正在保存安全设置...';
+      const securityTab = document.getElementById('security-tab');
+      if (securityTab.querySelector('#securitySaveStatus')) {
+        securityTab.querySelector('#securitySaveStatus').remove();
+      }
+      securityTab.prepend(statusDiv);
+      
+      // 获取拦截域名列表
+      const blockedDomainsText = document.getElementById('blockedDomains').value;
+      const blockedDomains = blockedDomainsText
+        .split('\n')
+        .map(domain => domain.trim())
+        .filter(domain => domain.length > 0);
+      
+      // 获取允许的IP地址列表
+      const allowedIPsText = document.getElementById('allowedIPs').value;
+      const allowedIPs = allowedIPsText
+        .split('\n')
+        .map(ip => ip.trim())
+        .filter(ip => ip.length > 0);
+      
+      // 获取速率限制设置
+      const enableRateLimit = document.getElementById('enableRateLimit').checked;
+      // 显式转换为数字并确保始终被视为更改的值
+      const rateLimitThreshold = parseInt(document.getElementById('rateLimitThreshold').value) || 1000;
+      
+      // 获取DNSSEC设置
+      const enableDNSSEC = document.getElementById('enableDNSSEC').checked;
+      
+      // 记录当前保存的值，便于调试
+      console.log('保存的安全设置:', { 
+        blockedDomains: blockedDomains.length + '个域名', 
+        allowedIPs: allowedIPs.length + '个IP', 
+        enableRateLimit, 
+        rateLimitThreshold,
+        enableDNSSEC
+      });
+      
+      // 保存所有配置（改用顺序请求，更可靠地处理错误）
+      const maxRetries = 2; // 最多重试次数
+      let retryCount = 0;
+      
+      // 创建保存函数，支持重试
+      const saveWithRetry = async () => {
+        try {
+          // 顺序保存而非并行，确保每一步都成功
+          statusDiv.innerHTML = `<strong>正在保存...</strong> 1/4 保存拦截域名列表 (${blockedDomains.length}个域名)`;
+          
+        // 1. 保存拦截域名列表
+          const blockedDomainsResult = await fetch('/api/dns/update-blocked-domains', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ blockedDomains })
+          }).then(response => response.json());
+          
+          if (!blockedDomainsResult.success) {
+            throw new Error(`保存拦截域名失败: ${blockedDomainsResult.message}`);
+          }
+          
+          statusDiv.innerHTML = `<strong>正在保存...</strong> 2/4 保存IP白名单 (${allowedIPs.length}个IP)`;
+        
+        // 2. 保存允许的IP地址列表
+          const allowedIPsResult = await fetch('/api/dns/update-allowed-ips', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ allowedIPs })
+          }).then(response => response.json());
+          
+          if (!allowedIPsResult.success) {
+            throw new Error(`保存IP白名单失败: ${allowedIPsResult.message}`);
+          }
+          
+          statusDiv.innerHTML = `<strong>正在保存...</strong> 3/4 保存速率限制设置`;
+        
+        // 3. 保存速率限制设置
+          const rateLimitResult = await fetch('/api/dns/update-rate-limit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            enableRateLimit, 
+            rateLimitThreshold 
+          })
+          }).then(response => response.json());
+          
+          if (!rateLimitResult.success) {
+            throw new Error(`保存速率限制设置失败: ${rateLimitResult.message}`);
+          }
+          
+          statusDiv.innerHTML = `<strong>正在保存...</strong> 4/4 保存DNSSEC设置`;
+        
+        // 4. 保存DNSSEC设置
+          const dnssecResult = await fetch('/api/dns/update-dnssec', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            enableDNSSEC
+          })
+          }).then(response => response.json());
+          
+          if (!dnssecResult.success) {
+            throw new Error(`保存DNSSEC设置失败: ${dnssecResult.message}`);
+          }
+          
+          // 所有保存成功
+          statusDiv.className = 'alert alert-success';
+          statusDiv.innerHTML = `
+            <strong>成功!</strong> 安全配置已保存并应用。
+            <div class="mt-2">
+              <small>域名拦截: ${blockedDomains.length}个规则</small><br>
+              <small>IP白名单: ${allowedIPs.length}个地址</small><br>
+              <small>速率限制: ${enableRateLimit ? '已启用' : '已禁用'}${enableRateLimit ? `, 阈值: ${rateLimitThreshold}请求/分钟` : ''}</small><br>
+              <small>DNSSEC: ${enableDNSSEC ? '已启用' : '已禁用'}</small>
+            </div>
+          `;
+          
+          // 5秒后淡出状态消息
+          setTimeout(() => {
+            if (statusDiv.parentNode) {
+              statusDiv.classList.add('fade-out');
+              setTimeout(() => {
+                if (statusDiv.parentNode) {
+                  statusDiv.remove();
+                }
+              }, 1000);
+            }
+          }, 5000);
+          
+        } catch (error) {
+          console.error('保存安全配置出错:', error);
+          
+          // 是否需要重试
+          if (retryCount < maxRetries) {
+            retryCount++;
+            statusDiv.className = 'alert alert-warning';
+          statusDiv.innerHTML = `
+              <strong>警告!</strong> 保存过程中遇到错误，正在重试 (${retryCount}/${maxRetries})...<br>
+              <small>${error.message}</small>
+            `;
+            
+            // 延迟1秒后重试
+            setTimeout(() => {
+              saveWithRetry();
+            }, 1000);
+          } else {
+            // 重试次数已用完，显示最终错误
+        statusDiv.className = 'alert alert-danger';
+        statusDiv.innerHTML = `
+              <strong>错误!</strong> 保存安全配置失败，请稍后再试。<br>
+              <small>${error.message}</small>
+              <button class="btn btn-sm btn-outline-danger mt-2" onclick="saveSecurityConfig()">重试</button>
+        `;
+          }
+        } finally {
+        // 恢复按钮状态
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+        }
+      };
+      
+      // 开始保存过程
+      saveWithRetry();
+    }
+    
+    // 保存DNS配置
+    function saveDnsConfig() {
+      // 显示保存中状态
+      const saveBtn = document.getElementById('saveConfigBtn');
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = '保存中...';
+      saveBtn.disabled = true;
+
+      // 添加状态指示器到DNS选项卡
+      const statusDiv = document.createElement('div');
+      statusDiv.id = 'dnsSaveStatus';
+      statusDiv.className = 'alert alert-info';
+      statusDiv.textContent = '正在保存DNS设置...';
+      const dnsTab = document.getElementById('dns-tab');
+      if (dnsTab.querySelector('#dnsSaveStatus')) {
+        dnsTab.querySelector('#dnsSaveStatus').remove();
+      }
+      dnsTab.prepend(statusDiv);
+
+      // 获取上游DNS服务器配置
+      const upstreamDNSText = document.getElementById('upstreamDNS').value;
+      const upstreamServers = upstreamDNSText
+        .split(',')
+        .map(server => {
+          const trimmedServer = server.trim();
+          // 默认端口为53
+          let serverHost = trimmedServer;
+          let serverPort = 53;
+          
+          // 检查是否包含端口号 (例如 8.8.8.8:53)
+          if (trimmedServer.includes(':')) {
+            const parts = trimmedServer.split(':');
+            serverHost = parts[0].trim();
+            serverPort = parseInt(parts[1].trim()) || 53;
+          }
+          
+          return {
+            server: serverHost,
+            port: serverPort
+          };
+        })
+        .filter(server => server.server.length > 0);
+      
+      // 获取DNS服务器设置
+      const dnsPort = parseInt(document.getElementById('dnsPort').value);
+      const dnsProtocol = document.getElementById('dnsProtocol').value;
+      const enableRecursion = document.getElementById('enableRecursion').checked;
+      
+      // 记录当前保存的值，便于调试
+      console.log('保存的DNS设置:', { 
+        upstreamServers: upstreamServers.length + '个服务器', 
+        dnsPort, 
+        dnsProtocol, 
+        enableRecursion 
+      });
+
+      // 保存所有配置（使用Promise.all并行处理多个请求）
+      Promise.all([
+        // 1. 保存上游DNS服务器
+      fetch('/api/dns/update-upstream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ upstreamServers })
+        }).then(response => response.json()),
+          
+        // 2. 保存DNS服务器设置
+        fetch('/api/dns/update-server-config', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+              port: dnsPort, 
+              protocol: dnsProtocol, 
+              recursion: enableRecursion 
+            })
+        }).then(response => response.json()),
+      ])
+      .then(results => {
+        // 检查所有请求是否都成功
+        const allSuccess = results.every(result => result.success);
+        
+        if (allSuccess) {
+          // 更新状态指示器
+          statusDiv.className = 'alert alert-success';
+          statusDiv.innerHTML = `
+            <strong>成功!</strong> DNS配置已保存并应用。
+            <div class="mt-2">
+              <small>上游DNS服务器: ${upstreamServers.length}个</small><br>
+              <small>DNS端口: ${dnsPort}</small><br>
+              <small>DNS协议: ${dnsProtocol === 'both' ? 'UDP和TCP' : dnsProtocol.toUpperCase()}</small><br>
+              <small>递归查询: ${enableRecursion ? '已启用' : '已禁用'}</small>
+            </div>
+          `;
+          
+          // 5秒后淡出状态消息
+            setTimeout(() => {
+            if (statusDiv.parentNode) {
+              statusDiv.classList.add('fade-out');
+            setTimeout(() => {
+                if (statusDiv.parentNode) {
+                  statusDiv.remove();
+                }
+              }, 1000);
+          }
+          }, 5000);
+        } else {
+          // 找出失败的请求并显示错误信息
+          const errors = results
+            .filter(result => !result.success)
+            .map(result => result.message)
+            .join('<br>');
+          
+          // 更新状态指示器
+          statusDiv.className = 'alert alert-danger';
+          statusDiv.innerHTML = `
+            <strong>错误!</strong> 保存DNS配置时出现问题：<br>${errors}
+          `;
+        }
+      })
+      .catch(error => {
+        // 更新状态指示器
+        statusDiv.className = 'alert alert-danger';
+        statusDiv.innerHTML = `
+          <strong>错误!</strong> 保存DNS配置出错: ${error.message}
+        `;
+      })
+      .finally(() => {
+        // 恢复按钮状态
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+        });
+    }
+    
+    // 初始化缓存功能的事件监听
+    document.getElementById('refreshCacheStats').addEventListener('click', loadCacheStats);
+    document.getElementById('clearCacheStats').addEventListener('click', clearDnsCache);
+    document.getElementById('clearDomainCache').addEventListener('click', clearDomainCache);
+    
+    // 添加刷新DNS设置按钮事件监听器
+    // document.getElementById('refreshDnsSettings').addEventListener('click', loadDnsSettings);
+    
+    // 移除刷新日志设置按钮事件监听器
+    // document.getElementById('refreshLoggingSettings').addEventListener('click', loadLoggingSettings);
+    
+    // 保存配置按钮
+    document.getElementById('saveConfigBtn').addEventListener('click', function() {
+      // 根据当前活动的选项卡来决定保存哪个配置
+      const activeTab = document.querySelector('.tab-btn.active').getAttribute('data-tab');
+      
+      if (activeTab === 'cache') {
+        saveCacheConfig();
+      } else if (activeTab === 'security') {
+        saveSecurityConfig();
+      } else if (activeTab === 'dns') {
+        saveDnsConfig();
+      } else if (activeTab === 'logging') {
+        saveLoggingConfig();
+      } else if (activeTab === 'general') {
+        saveGeneralConfig();
+      } else {
+        // 其他选项卡的保存逻辑...
+        alert('配置已保存');
+      }
+    });
+    
+    // 页面加载时获取初始缓存统计
+    loadCacheStats();
+    
+    // 页面加载时获取DNS设置
+    loadDnsSettings();
+    
+    // 页面加载时获取安全设置
+    loadSecuritySettings();
+    
+    // 页面加载时获取日志设置
+    loadLoggingSettings();
+    
+    // 页面加载时获取常规设置
+    loadGeneralSettings();
+    
+    // 系统更新功能
+    
+    // 检查系统更新
+    function checkForUpdates() {
+      const checkBtn = document.getElementById('checkUpdateBtn');
+      const originalText = checkBtn.textContent;
+      checkBtn.textContent = '检查中...';
+      checkBtn.disabled = true;
+      
+      fetch('/api/system/updates')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const updateData = data.data;
+            
+            // 更新UI显示
+            document.getElementById('currentVersion').textContent = updateData.currentVersion;
+            document.getElementById('latestVersion').textContent = updateData.latestVersion;
+            document.getElementById('lastCheck').textContent = new Date(updateData.lastCheck).toLocaleString();
+            
+            // 启用或禁用更新按钮
+            const updateBtn = document.getElementById('doUpdateBtn');
+            updateBtn.disabled = !updateData.hasUpdate;
+            
+            if (updateData.hasUpdate) {
+              alert(`发现新版本: ${updateData.latestVersion}\n\n更新内容:\n${updateData.releaseNotes}`);
+            } else {
+              alert('您的系统已是最新版本');
+            }
+          } else {
+            alert('检查更新失败: ' + (data.message || '未知错误'));
+          }
+        })
+        .catch(error => {
+          alert('检查更新出错: ' + error.message);
+        })
+        .finally(() => {
+          checkBtn.textContent = originalText;
+          checkBtn.disabled = false;
+        });
+    }
+    
+    // 执行系统更新
+    function performUpdate() {
+      if (!confirm('确定要更新系统吗？这将重启服务并可能暂时中断服务。')) {
+        return;
+      }
+      
+      const updateBtn = document.getElementById('doUpdateBtn');
+      const originalText = updateBtn.textContent;
+      updateBtn.textContent = '更新中...';
+      updateBtn.disabled = true;
+      
+      fetch('/api/system/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert(data.message || '系统更新成功');
+            
+            // 更新UI显示
+            document.getElementById('currentVersion').textContent = data.newVersion;
+            document.getElementById('latestVersion').textContent = data.newVersion;
+            
+            // 禁用更新按钮
+            updateBtn.disabled = true;
+          } else {
+            alert('系统更新失败: ' + (data.message || '未知错误'));
+          }
+        })
+        .catch(error => {
+          alert('系统更新出错: ' + error.message);
+        })
+        .finally(() => {
+          updateBtn.textContent = originalText;
+        });
+    }
+    
+    // 添加系统更新事件监听
+    document.getElementById('checkUpdateBtn').addEventListener('click', checkForUpdates);
+    document.getElementById('doUpdateBtn').addEventListener('click', performUpdate);
+    
+    // 初始化系统更新UI
+    function initUpdateUI() {
+      // 获取当前版本
+      fetch('/api/system/version')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById('currentVersion').textContent = data.version;
+          }
+        })
+        .catch(error => {
+          console.error('获取当前版本失败:', error);
+        });
+      
+      document.getElementById('latestVersion').textContent = '点击检查更新按钮获取';
+      
+      // 从配置中获取上次检查时间
+      fetch('/api/system/updates/last-check')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.lastCheck) {
+            document.getElementById('lastCheck').textContent = new Date(data.lastCheck).toLocaleString();
+          } else {
+            document.getElementById('lastCheck').textContent = '从未检查';
+          }
+        })
+        .catch(error => {
+          console.error('获取上次检查时间失败:', error);
+          document.getElementById('lastCheck').textContent = '未知';
+        });
+    }
+    
+    // 初始化系统更新UI
+    initUpdateUI();
+
+    // 调试日志功能
+    function loadDebugLogs() {
+      document.getElementById('logTableBody').innerHTML = '<tr><td colspan="3" class="loading-placeholder">加载日志中...</td></tr>';
+      
+      fetch('/api/dns/config-logs')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            displayLogs(data.logs);
+            
+            // 更新日志文件信息
+            if (data.currentLogFile) {
+              document.getElementById('currentLogFile').textContent = data.currentLogFile;
+            }
+            
+            if (data.logFiles) {
+              document.getElementById('logFileCount').textContent = data.logFiles.length;
+              populateLogFilesDropdown(data.logFiles);
+            }
+          } else {
+            document.getElementById('logTableBody').innerHTML = `<tr><td colspan="3" class="loading-placeholder">加载日志失败: ${data.message}</td></tr>`;
+          }
+        })
+        .catch(error => {
+          document.getElementById('logTableBody').innerHTML = `<tr><td colspan="3" class="loading-placeholder">加载日志出错: ${error.message}</td></tr>`;
+        });
+    }
+    
+    // 填充日志文件下拉列表
+    function populateLogFilesDropdown(logFiles) {
+      const menu = document.getElementById('logFilesMenu');
+      
+      // 清除已有的历史日志项
+      const items = menu.querySelectorAll('.dropdown-item.history-log');
+      items.forEach(item => item.remove());
+      
+      // 添加日志文件
+      logFiles.forEach(file => {
+        // 从文件名提取日期部分
+        let displayName = file;
+        const match = file.match(/dns_config_(\d{4}-\d{2}-\d{2})\.log/);
+        if (match) {
+          displayName = match[1]; // 只显示日期部分
+        }
+        
+        const item = document.createElement('a');
+        item.className = 'dropdown-item history-log';
+        item.href = '#';
+        item.setAttribute('data-file', file);
+        item.textContent = displayName;
+        
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+          loadSpecificLogFile(file);
+          
+          // 更新活动状态
+          menu.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
+          this.classList.add('active');
+        });
+        
+        menu.appendChild(item);
+      });
+    }
+    
+    // 加载特定的日志文件
+    function loadSpecificLogFile(fileName) {
+      document.getElementById('logTableBody').innerHTML = '<tr><td colspan="3" class="loading-placeholder">加载日志文件中...</td></tr>';
+      
+      fetch(`/api/dns/config-logs?file=${encodeURIComponent(fileName)}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            displayLogs(data.logs);
+          } else {
+            document.getElementById('logTableBody').innerHTML = `<tr><td colspan="3" class="loading-placeholder">加载日志文件失败: ${data.message}</td></tr>`;
+          }
+        })
+        .catch(error => {
+          document.getElementById('logTableBody').innerHTML = `<tr><td colspan="3" class="loading-placeholder">加载日志文件出错: ${error.message}</td></tr>`;
+        });
+    }
+    
+    function displayLogs(logs) {
+      const tableBody = document.getElementById('logTableBody');
+      const searchInput = document.getElementById('logSearchInput');
+      const typeFilter = document.getElementById('logTypeFilter');
+      
+      // 获取搜索和过滤条件
+      const searchTerm = searchInput.value.toLowerCase();
+      const filterType = typeFilter.value;
+      
+      // 过滤日志
+      const filteredLogs = logs.filter(log => {
+        const logStr = JSON.stringify(log).toLowerCase();
+        const matchesSearch = logStr.includes(searchTerm);
+        
+        if (filterType === 'all') {
+          return matchesSearch;
+        }
+        
+        if (filterType === 'config') {
+          return matchesSearch && log.operation && !log.operation.includes('error') && !log.operation.includes('失败') && !log.operation.includes('重启');
+        }
+        
+        if (filterType === 'error') {
+          return matchesSearch && ((log.error) || (log.operation && (log.operation.includes('error') || log.operation.includes('失败'))));
+        }
+        
+        if (filterType === 'restart') {
+          return matchesSearch && log.operation && log.operation.includes('重启');
+        }
+        
+        return matchesSearch;
+      });
+      
+      // 清空表格
+      tableBody.innerHTML = '';
+      
+      // 如果没有日志或过滤后没有结果
+      if (!logs.length) {
+        tableBody.innerHTML = '<tr><td colspan="3" class="loading-placeholder">没有找到日志记录</td></tr>';
+        return;
+      }
+      
+      if (!filteredLogs.length) {
+        tableBody.innerHTML = '<tr><td colspan="3" class="loading-placeholder">没有匹配的日志记录</td></tr>';
+        return;
+      }
+      
+      // 填充表格
+      filteredLogs.forEach((log, index) => {
+        const row = document.createElement('tr');
+        
+        // 添加行类
+        if (log.error) {
+          row.classList.add('log-row-error');
+        } else if (log.operation && log.operation.includes('重启')) {
+          row.classList.add('log-row-restart');
+        }
+        
+        // 添加行数据
+        row.innerHTML = `
+          <td>${new Date(log.timestamp).toLocaleString()}</td>
+          <td>${log.error ? '错误' : (log.operation || '未知操作')}</td>
+          <td>${getLogSummary(log)}</td>
+        `;
+        
+        // 添加点击事件显示详情
+        row.addEventListener('click', () => {
+          document.getElementById('logDetailPanel').classList.add('active');
+          try {
+            // 美化JSON显示
+            const logData = { ...log };
+            // 移除系统信息，使显示更简洁
+            if (logData.system) {
+              delete logData.system;
+            }
+            
+            document.getElementById('logDetailContent').textContent = JSON.stringify(logData, null, 2);
+          } catch (e) {
+            document.getElementById('logDetailContent').textContent = '日志详情解析错误：' + e.message;
+          }
+        });
+        
+        tableBody.appendChild(row);
+      });
+    }
+    
+    function getLogSummary(log) {
+      if (log.error) {
+        return `${log.error.message || '未知错误'}`;
+      }
+      
+      if (log.details) {
+        return `${Object.keys(log.details).join(', ')}`;
+      }
+      
+      // 提取主要信息
+      const details = { ...log };
+      delete details.timestamp;
+      delete details.operation;
+      delete details.system;
+      
+      // 显示键值对
+      const keyValues = Object.entries(details)
+        .filter(([key]) => key !== 'error')
+        .map(([key, value]) => {
+          if (typeof value === 'object' && value !== null) {
+            return `${key}: {...}`;
+          }
+          return `${key}: ${value}`;
+        })
+        .join(', ');
+      
+      if (keyValues.length > 60) {
+        return keyValues.substring(0, 60) + '...';
+      }
+      
+      return keyValues || '无详细信息';
+    }
+    
+    // 重新加载当前日志
+    document.getElementById('refreshLogsBtn').addEventListener('click', loadDebugLogs);
+    
+    // 下载日志
+    document.getElementById('downloadLogsBtn').addEventListener('click', function() {
+      fetch('/api/dns/config-logs')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // 创建下载
+            const logsJson = JSON.stringify(data.logs, null, 2);
+            const blob = new Blob([logsJson], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dns_config_logs_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            
+            // 清理
+            setTimeout(() => {
+              document.body.removeChild(a);
+              window.URL.revokeObjectURL(url);
+            }, 0);
+          } else {
+            alert('下载日志失败: ' + (data.message || '未知错误'));
+          }
+        })
+        .catch(error => {
+          alert('下载日志出错: ' + error.message);
+        });
+    });
+    
+    // 初始化当前日志选项点击事件
+    document.querySelector('#logFilesMenu [data-file="current"]').addEventListener('click', function(e) {
+      e.preventDefault();
+      loadDebugLogs();
+      
+      // 更新活动状态
+      document.querySelectorAll('#logFilesMenu .dropdown-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      this.classList.add('active');
+    });
+    
+    // 关闭详情面板
+    document.getElementById('closeLogDetailBtn').addEventListener('click', function() {
+      document.getElementById('logDetailPanel').classList.remove('active');
+    });
+    
+    // 搜索和过滤条件变化时重新过滤日志
+    document.getElementById('logSearchInput').addEventListener('input', function() {
+      fetch('/api/dns/config-logs')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            displayLogs(data.logs);
+          }
+        });
+    });
+    
+    document.getElementById('logTypeFilter').addEventListener('change', function() {
+      fetch('/api/dns/config-logs')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            displayLogs(data.logs);
+          }
+        });
+    });
+    
+    // 初始加载日志
+    if (document.getElementById('debug-tab').classList.contains('active')) {
+      loadDebugLogs();
+    }
+    
+    // 当点击调试日志选项卡时加载日志
+    document.querySelector('button[data-tab="debug"]').addEventListener('click', function() {
+      loadDebugLogs();
+    });
+
+    // 单独加载安全设置
+    function loadSecuritySettings() {
+      fetch('/api/system/settings')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const config = data.data;
+            
+            // 加载拦截域名列表
+            if (config.dns.security && Array.isArray(config.dns.security.blockedDomains)) {
+              const blockedDomainsText = config.dns.security.blockedDomains.join('\n');
+              document.getElementById('blockedDomains').value = blockedDomainsText;
+              console.log('已加载拦截域名列表，共', config.dns.security.blockedDomains.length, '个域名');
+            } else {
+              console.log('未找到拦截域名列表或列表为空');
+              document.getElementById('blockedDomains').value = '';
+            }
+            
+            // 加载允许的IP地址
+            if (config.dns.security && Array.isArray(config.dns.security.allowedIPs)) {
+              const allowedIPsText = config.dns.security.allowedIPs.join('\n');
+              document.getElementById('allowedIPs').value = allowedIPsText;
+              console.log('已加载允许的IP地址列表，共', config.dns.security.allowedIPs.length, '个IP');
+            } else {
+              console.log('未找到允许的IP地址列表或列表为空');
+              // 如果没有配置，设置默认值为0.0.0.0/0（允许所有IP）
+              document.getElementById('allowedIPs').value = '0.0.0.0/0';
+            }
+            
+            // 加载速率限制设置
+            if (config.dns.security && config.dns.security.rateLimit) {
+              // 设置启用/禁用状态
+              const enableRateLimit = config.dns.security.rateLimit.enable;
+              document.getElementById('enableRateLimit').checked = !!enableRateLimit;
+              
+              // 设置阈值 - 确保作为数字处理
+              const threshold = parseInt(config.dns.security.rateLimit.threshold);
+              if (!isNaN(threshold)) {
+                document.getElementById('rateLimitThreshold').value = threshold;
+                console.log('已加载速率限制阈值:', threshold);
+              } else {
+                document.getElementById('rateLimitThreshold').value = 1000; // 默认值
+                console.log('速率限制阈值无效，使用默认值1000');
+              }
+              
+              console.log('已加载速率限制设置：', { 
+                enable: enableRateLimit, 
+                threshold: threshold 
+              });
+            } else {
+              console.log('未找到速率限制设置，使用默认值');
+              document.getElementById('enableRateLimit').checked = true;
+              document.getElementById('rateLimitThreshold').value = 1000;
+            }
+            
+            // 加载DNSSEC设置
+            if (config.dns.security && config.dns.security.dnssec) {
+              const enableDNSSEC = config.dns.security.dnssec.enable;
+              document.getElementById('enableDNSSEC').checked = !!enableDNSSEC;
+              console.log('已加载DNSSEC设置：', {
+                enable: enableDNSSEC
+              });
+            } else {
+              console.log('未找到DNSSEC设置，使用默认值（禁用）');
+              document.getElementById('enableDNSSEC').checked = false;
+            }
+          } else {
+            console.error('加载安全设置失败:', data.message);
+          }
+        })
+        .catch(error => {
+          console.error('加载安全设置出错:', error);
+        });
+    }
+
+    // 保存日志配置
+    function saveLoggingConfig() {
+      // 显示保存中状态
+      const saveBtn = document.getElementById('saveConfigBtn');
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = '保存中...';
+      saveBtn.disabled = true;
+      
+      // 添加状态指示器到日志选项卡
+      const statusDiv = document.createElement('div');
+      statusDiv.id = 'loggingSaveStatus';
+      statusDiv.className = 'alert alert-info';
+      statusDiv.textContent = '正在保存日志设置...';
+      const loggingTab = document.getElementById('logging-tab');
+      if (loggingTab.querySelector('#loggingSaveStatus')) {
+        loggingTab.querySelector('#loggingSaveStatus').remove();
+      }
+      loggingTab.prepend(statusDiv);
+      
+      // 获取日志设置
+      const logLevel = document.getElementById('logLevel').value;
+      const logQueries = document.getElementById('logQueries').checked;
+      const logResponses = document.getElementById('logResponses').checked;
+      const logRotation = document.getElementById('logRotation').value;
+      const logRetention = parseInt(document.getElementById('logRetention').value) || 30;
+      const enableDebug = document.getElementById('enableDebug').checked;
+      
+      // 记录当前保存的值，便于调试
+      console.log('保存的日志设置:', { 
+        logLevel, 
+        logQueries, 
+        logResponses, 
+        logRotation, 
+        logRetention,
+        enableDebug
+      });
+      
+      // 保存设置
+      fetch('/api/dns/update-logging', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          logLevel, 
+          logQueries, 
+          logResponses, 
+          logRotation, 
+          logRetention,
+          debug: enableDebug
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // 保存成功后刷新设置显示，确保显示最新配置
+          setTimeout(() => {
+            loadLoggingSettings();
+          }, 500);
+          
+          // 更新状态指示器
+          statusDiv.className = 'alert alert-success';
+          statusDiv.innerHTML = `
+            <strong>成功!</strong> 日志配置已保存并应用。
+            <div class="mt-2">
+              <small>日志级别: ${logLevel}</small><br>
+              <small>记录DNS查询: ${logQueries ? '是' : '否'}</small><br>
+              <small>记录DNS响应: ${logResponses ? '是' : '否'}</small><br>
+              <small>调试模式: ${enableDebug ? '已启用' : '已禁用'}</small><br>
+              <small>日志轮换: ${logRotation}</small><br>
+              <small>保留时间: ${logRetention}天</small>
+            </div>
+          `;
+          
+          // 5秒后淡出状态消息
+          setTimeout(() => {
+            if (statusDiv.parentNode) {
+              statusDiv.classList.add('fade-out');
+              setTimeout(() => {
+                if (statusDiv.parentNode) {
+                  statusDiv.remove();
+                }
+              }, 1000);
+            }
+          }, 5000);
+        } else {
+          // 更新状态指示器为错误
+          statusDiv.className = 'alert alert-danger';
+          statusDiv.innerHTML = `
+            <strong>错误!</strong> 保存日志配置失败：${data.message || '未知错误'}
+          `;
+        }
+      })
+      .catch(error => {
+        // 更新状态指示器为错误
+        statusDiv.className = 'alert alert-danger';
+        statusDiv.innerHTML = `
+          <strong>错误!</strong> 保存日志配置出错: ${error.message}
+        `;
+      })
+      .finally(() => {
+        // 恢复按钮状态
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+      });
+    }
+    
+    // 单独加载日志设置
+    function loadLoggingSettings() {
+      fetch('/api/system/settings')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const config = data.data;
+            
+            // 加载日志设置 - 从dns.logging路径读取，而不是之前的logging路径
+            if (config.dns && config.dns.logging) {
+              // 设置日志级别
+              if (config.dns.logging.level) {
+                document.getElementById('logLevel').value = config.dns.logging.level;
+                console.log('已加载日志级别:', config.dns.logging.level);
+              }
+              
+              // 设置记录DNS查询选项
+              if (typeof config.dns.logging.logQueries === 'boolean') {
+                document.getElementById('logQueries').checked = config.dns.logging.logQueries;
+                console.log('已加载记录DNS查询设置:', config.dns.logging.logQueries);
+              }
+              
+              // 设置记录DNS响应选项
+              if (typeof config.dns.logging.logResponses === 'boolean') {
+                document.getElementById('logResponses').checked = config.dns.logging.logResponses;
+                console.log('已加载记录DNS响应设置:', config.dns.logging.logResponses);
+              }
+              
+              // 设置日志轮换周期
+              if (config.dns.logging.rotation) {
+                document.getElementById('logRotation').value = config.dns.logging.rotation;
+                console.log('已加载日志轮换周期:', config.dns.logging.rotation);
+              }
+              
+              // 设置日志保留时间
+              if (config.dns.logging.retention) {
+                document.getElementById('logRetention').value = config.dns.logging.retention;
+                console.log('已加载日志保留时间:', config.dns.logging.retention);
+              }
+              
+              console.log('已加载日志设置:', config.dns.logging);
+            } else {
+              console.log('未找到日志设置，使用默认值');
+            }
+
+            // 加载调试模式设置
+            if (config.dns && typeof config.dns.debug === 'boolean') {
+              document.getElementById('enableDebug').checked = config.dns.debug;
+              console.log('已加载调试模式设置:', config.dns.debug);
+            } else {
+              // 默认关闭调试模式
+              document.getElementById('enableDebug').checked = false;
+              console.log('未找到调试模式设置，默认关闭');
+            }
+          } else {
+            console.error('加载日志设置失败:', data.message);
+          }
+        })
+        .catch(error => {
+          console.error('加载日志设置出错:', error);
+        });
+    }
+
+    // 单独加载常规设置
+    function loadGeneralSettings() {
+      fetch('/api/system/settings')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const config = data.data;
+            // 从config中读取常规设置
+            // 尝试读取general部分，如果不存在则使用默认值
+            const general = config.general || {};
+            
+            // 设置服务器名称
+            if (general.serverName) {
+              document.getElementById('serverName').value = general.serverName;
+              console.log('已加载服务器名称:', general.serverName);
+            }
+            
+            // 设置管理员邮箱
+            if (general.adminEmail) {
+              document.getElementById('adminEmail').value = general.adminEmail;
+              console.log('已加载管理员邮箱:', general.adminEmail);
+            }
+            
+            // 设置Web端口 - 从server配置中获取
+            if (config.server && config.server.port) {
+              document.getElementById('webPort').value = config.server.port;
+              console.log('已加载Web端口:', config.server.port);
+            } else {
+              // 如果在settings API中没有找到，则回退到使用server-info API
+            fetch('/api/system/server-info')
+              .then(response => response.json())
+              .then(serverData => {
+                if (serverData.success && serverData.port) {
+                  document.getElementById('webPort').value = serverData.port;
+                  console.log('已加载Web端口:', serverData.port);
+                } else {
+                  console.error('获取Web端口失败:', serverData.message);
+                }
+              })
+              .catch(error => {
+                console.error('获取Web端口出错:', error);
+              });
+            }
+            
+            // 设置界面语言
+            if (general.language) {
+              document.getElementById('language').value = general.language;
+              console.log('已加载界面语言:', general.language);
+            }
+            
+            console.log('已加载常规设置');
+          } else {
+            console.error('加载常规设置失败:', data.message);
+          }
+        })
+        .catch(error => {
+          console.error('加载常规设置出错:', error);
+        });
+    }
+    
+    // 保存常规设置
+    function saveGeneralConfig() {
+      // 显示保存中状态
+      const saveBtn = document.getElementById('saveConfigBtn');
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = '保存中...';
+      saveBtn.disabled = true;
+      
+      // 添加状态指示器到常规设置选项卡
+      const statusDiv = document.createElement('div');
+      statusDiv.id = 'generalSaveStatus';
+      statusDiv.className = 'alert alert-info';
+      statusDiv.textContent = '正在保存常规设置...';
+      const generalTab = document.getElementById('general-tab');
+      if (generalTab.querySelector('#generalSaveStatus')) {
+        generalTab.querySelector('#generalSaveStatus').remove();
+      }
+      generalTab.prepend(statusDiv);
+      
+      // 获取常规设置
+      const serverName = document.getElementById('serverName').value;
+      const adminEmail = document.getElementById('adminEmail').value;
+      const webPort = document.getElementById('webPort').value;
+      const language = document.getElementById('language').value;
+      
+      // 记录当前保存的值，便于调试
+      console.log('保存的常规设置:', { 
+        serverName, 
+        adminEmail, 
+        webPort, 
+        language 
+      });
+      
+      // 保存设置
+      fetch('/api/system/update-general-settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          serverName, 
+          adminEmail, 
+          webPort, 
+          language 
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // 更新状态指示器
+          statusDiv.className = 'alert alert-success';
+          statusDiv.innerHTML = `
+            <strong>成功!</strong> 常规设置已保存并应用。
+            <div class="mt-2">
+              <small>服务器名称: ${serverName}</small><br>
+              <small>管理员邮箱: ${adminEmail}</small><br>
+              <small>Web端口: ${webPort}</small><br>
+              <small>界面语言: ${language === 'zh-CN' ? '简体中文' : 'English'}</small>
+            </div>
+          `;
+          
+          // 5秒后淡出状态消息
+          setTimeout(() => {
+            if (statusDiv.parentNode) {
+              statusDiv.classList.add('fade-out');
+              setTimeout(() => {
+                if (statusDiv.parentNode) {
+                  statusDiv.remove();
+                }
+              }, 1000);
+            }
+          }, 5000);
+        } else {
+          // 更新状态指示器为错误
+          statusDiv.className = 'alert alert-danger';
+          statusDiv.innerHTML = `
+            <strong>错误!</strong> 保存常规设置失败：${data.message || '未知错误'}
+          `;
+        }
+      })
+      .catch(error => {
+        // 更新状态指示器为错误
+        statusDiv.className = 'alert alert-danger';
+        statusDiv.innerHTML = `
+          <strong>错误!</strong> 保存常规设置出错: ${error.message}
+        `;
+      })
+      .finally(() => {
+        // 恢复按钮状态
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+      });
+    }
+  });
+</script> 

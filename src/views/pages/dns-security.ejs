@@ -1,0 +1,1508 @@
+<link rel="stylesheet" href="/css/global-components.css">
+<!-- 引入jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+  <div class="dns-test-container">
+  <div class="dns-test-container">
+    <!-- 当前协议状态 -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h2>DNS协议支持状态</h2>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card mb-3">
+              <div class="card-body text-center">
+                <h3>DNS over TLS</h3>
+                <div id="dot-status" class="mt-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge <%= supportedProtocols.dot ? 'bg-success' : 'bg-danger' %>">
+                      <%= supportedProtocols.dot ? '已启用' : '未启用' %>
+                    </span>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input protocol-switch" type="checkbox" id="dot-switch" 
+                             data-protocol="dot" <%= supportedProtocols.dot ? 'checked' : '' %>>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card mb-3">
+              <div class="card-body text-center">
+                <h3>DNS over HTTPS</h3>
+                <div id="doh-status" class="mt-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge <%= supportedProtocols.doh ? 'bg-success' : 'bg-danger' %>">
+                      <%= supportedProtocols.doh ? '已启用' : '未启用' %>
+                    </span>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input protocol-switch" type="checkbox" id="doh-switch" 
+                             data-protocol="doh" <%= supportedProtocols.doh ? 'checked' : '' %>>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card mb-3">
+              <div class="card-body text-center">
+                <h3>DNS over QUIC</h3>
+                <div id="doq-status" class="mt-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge <%= supportedProtocols.doq ? 'bg-success' : 'bg-danger' %>">
+                      <%= supportedProtocols.doq ? '已启用' : '未启用' %>
+                    </span>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input protocol-switch" type="checkbox" id="doq-switch" 
+                             data-protocol="doq" <%= supportedProtocols.doq ? 'checked' : '' %>>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3">
+          <p><strong>当前默认协议:</strong> 
+            <span id="default-protocol"><%= defaultProtocol || 'standard' %></span>
+            <button id="editDefaultProtocol" class="btn btn-sm btn-primary ms-2" style="width: 70px; display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0;">
+              <i class="fas fa-edit me-1"></i><span>编辑</span>
+            </button>
+          </p>
+          <p><strong>回退顺序:</strong> 
+            <span id="fallback-order"><%= (fallbackOrder || ['standard']).join(', ') %></span>
+            <button id="editFallbackOrder" class="btn btn-sm btn-primary ms-2" style="width: 70px; display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0;">
+              <i class="fas fa-edit me-1"></i><span>编辑</span>
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 协议服务器配置 -->
+    <div class="accordion" id="accordionProtocols">
+      <!-- DNS over TLS (DoT) -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingDot">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDot" aria-expanded="true" aria-controls="collapseDot">
+            DNS over TLS (DoT) 服务器
+          </button>
+        </h2>
+        <div id="collapseDot" class="accordion-collapse collapse show" aria-labelledby="headingDot" data-bs-parent="#accordionProtocols">
+          <div class="accordion-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>主机</th>
+                    <th>端口</th>
+                    <th>服务器名称</th>
+                    <th>优先级</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="dot-servers">
+                  <% if (servers.dot && servers.dot.length > 0) { %>
+                    <% servers.dot.forEach(server => { %>
+                      <tr>
+                        <td><%= server.host %></td>
+                        <td><%= server.port %></td>
+                        <td><%= server.servername %></td>
+                        <td><%= server.priority %></td>
+                        <td>
+                          <div class="btn-group-custom">
+                            <button class="btn btn-sm btn-outline-primary test-dot-server btn-fixed-width" 
+                              data-host="<%= server.host %>" 
+                              data-port="<%= server.port %>" 
+                              data-servername="<%= server.servername %>">
+                              <i class="fas fa-vial"></i> 测试
+                            </button>
+                            <button class="btn btn-sm btn-primary edit-dot-server btn-fixed-width"
+                              data-host="<%= server.host %>" 
+                              data-port="<%= server.port %>" 
+                              data-servername="<%= server.servername %>"
+                              data-priority="<%= server.priority %>">
+                              <i class="fas fa-edit"></i> 编辑
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- DNS over HTTPS (DoH) -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingDoh">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDoh" aria-expanded="false" aria-controls="collapseDoh">
+            DNS over HTTPS (DoH) 服务器
+          </button>
+        </h2>
+        <div id="collapseDoh" class="accordion-collapse collapse" aria-labelledby="headingDoh" data-bs-parent="#accordionProtocols">
+          <div class="accordion-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>主机</th>
+                    <th>路径</th>
+                    <th>方法</th>
+                    <th>协议</th>
+                    <th>优先级</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="doh-servers">
+                  <% if (servers.doh && servers.doh.length > 0) { %>
+                    <% servers.doh.forEach(server => { %>
+                      <tr>
+                        <td><%= server.host %></td>
+                        <td><%= server.path %></td>
+                        <td><%= server.method %></td>
+                        <td><%= server.protocol %></td>
+                        <td><%= server.priority %></td>
+                        <td>
+                          <div class="btn-group-custom">
+                            <button class="btn btn-sm btn-outline-primary test-doh-server btn-fixed-width" 
+                              data-host="<%= server.host %>" 
+                              data-path="<%= server.path %>">
+                              <i class="fas fa-vial"></i> 测试
+                            </button>
+                            <button class="btn btn-sm btn-primary edit-doh-server btn-fixed-width"
+                              data-host="<%= server.host %>" 
+                              data-path="<%= server.path %>"
+                              data-method="<%= server.method %>"
+                              data-protocol="<%= server.protocol %>"
+                              data-priority="<%= server.priority %>">
+                              <i class="fas fa-edit"></i> 编辑
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- DNS over QUIC (DoQ) -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingDoq">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDoq" aria-expanded="false" aria-controls="collapseDoq">
+            DNS over QUIC (DoQ) 服务器
+          </button>
+        </h2>
+        <div id="collapseDoq" class="accordion-collapse collapse" aria-labelledby="headingDoq" data-bs-parent="#accordionProtocols">
+          <div class="accordion-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>主机</th>
+                    <th>端口</th>
+                    <th>优先级</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="doq-servers">
+                  <% if (servers.doq && servers.doq.length > 0) { %>
+                    <% servers.doq.forEach(server => { %>
+                      <tr>
+                        <td><%= server.host %></td>
+                        <td><%= server.port %></td>
+                        <td><%= server.priority %></td>
+                        <td>
+                          <div class="btn-group-custom">
+                            <button class="btn btn-sm btn-outline-primary test-doq-server btn-fixed-width" 
+                              data-host="<%= server.host %>" 
+                              data-port="<%= server.port %>">
+                              <i class="fas fa-vial"></i> 测试
+                            </button>
+                            <button class="btn btn-sm btn-primary edit-doq-server btn-fixed-width"
+                              data-host="<%= server.host %>" 
+                              data-port="<%= server.port %>" 
+                              data-priority="<%= server.priority %>">
+                              <i class="fas fa-edit"></i> 编辑
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑服务器模态框 -->
+<!-- 不需要在这里添加模态框，JavaScript会动态创建 -->
+
+<script>
+// 声明全局函数
+function closeEditModal() {
+  const modal = document.getElementById('editServerModal');
+  if (modal) {
+    // 淡出效果
+    modal.style.opacity = '0';
+    const dialog = modal.querySelector('.modal-dialog');
+    if (dialog) {
+      dialog.style.transform = 'translateY(-20px)';
+    }
+    
+    // 延迟后移除DOM
+    setTimeout(() => {
+      modal.remove();
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }, 300);
+  }
+}
+
+function closeTestModal() {
+  const modal = document.getElementById('testServerModal');
+  if (modal) {
+    // 淡出效果
+    modal.style.opacity = '0';
+    const dialog = modal.querySelector('.modal-dialog');
+    if (dialog) {
+      dialog.style.transform = 'translateY(-20px)';
+    }
+    
+    // 延迟后移除DOM
+    setTimeout(() => {
+      modal.remove();
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }, 300);
+  }
+}
+
+function closeDefaultProtocolModal() {
+  const modal = document.getElementById('editDefaultProtocolModal');
+  if (modal) {
+    // 淡出效果
+    modal.style.opacity = '0';
+    const dialog = modal.querySelector('.modal-dialog');
+    if (dialog) {
+      dialog.style.transform = 'translateY(-20px)';
+    }
+    
+    // 延迟后移除DOM
+    setTimeout(() => {
+      modal.remove();
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }, 300);
+  }
+}
+
+function closeFallbackOrderModal() {
+  const modal = document.getElementById('editFallbackOrderModal');
+  if (modal) {
+    // 淡出效果
+    modal.style.opacity = '0';
+    const dialog = modal.querySelector('.modal-dialog');
+    if (dialog) {
+      dialog.style.transform = 'translateY(-20px)';
+    }
+    
+    // 延迟后移除DOM
+    setTimeout(() => {
+      modal.remove();
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }, 300);
+  }
+}
+
+function saveDefaultProtocol() {
+  const defaultProtocol = document.getElementById('defaultProtocol').value;
+  
+  // 创建居中显示的加载消息
+  const loadingMessage = document.createElement('div');
+  loadingMessage.id = 'saveMessage';
+  loadingMessage.className = 'alert alert-info alert-dismissible fade show position-fixed';
+  loadingMessage.style.zIndex = '1060';
+  loadingMessage.style.top = '50%';
+  loadingMessage.style.left = '50%';
+  loadingMessage.style.transform = 'translate(-50%, -50%)';
+  loadingMessage.style.minWidth = '300px';
+  loadingMessage.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+  loadingMessage.role = 'alert';
+  loadingMessage.innerHTML = `
+    正在保存默认协议设置...
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  `;
+  document.body.appendChild(loadingMessage);
+  
+  fetch('/api/dns-security/update-default-protocol', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      defaultProtocol
+    })
+  })
+  .then(response => response.json())
+  .then(result => {
+    // 移除加载消息
+    if (document.getElementById('saveMessage')) {
+      document.getElementById('saveMessage').remove();
+    }
+    
+    if (result.success) {
+      // 关闭模态框
+      closeDefaultProtocolModal();
+      
+      // 更新页面上的默认协议显示
+      document.getElementById('default-protocol').textContent = defaultProtocol;
+      
+      // 直接刷新页面
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+    } else {
+      // 创建错误消息
+      const errorMessage = document.createElement('div');
+      errorMessage.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+      errorMessage.style.zIndex = '1060';
+      errorMessage.style.top = '50%';
+      errorMessage.style.left = '50%';
+      errorMessage.style.transform = 'translate(-50%, -50%)';
+      errorMessage.style.minWidth = '300px';
+      errorMessage.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+      errorMessage.role = 'alert';
+      errorMessage.innerHTML = `
+        保存失败: ${result.message || '未知错误'}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      document.body.appendChild(errorMessage);
+      
+      // 设置定时关闭消息
+      setTimeout(() => {
+        if (document.body.contains(errorMessage)) {
+          errorMessage.remove();
+        }
+      }, 3000);
+    }
+  })
+  .catch(error => {
+    // 移除加载消息
+    if (document.getElementById('saveMessage')) {
+      document.getElementById('saveMessage').remove();
+    }
+    
+    // 创建错误消息
+    const errorMessage = document.createElement('div');
+    errorMessage.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+    errorMessage.style.zIndex = '1060';
+    errorMessage.style.top = '50%';
+    errorMessage.style.left = '50%';
+    errorMessage.style.transform = 'translate(-50%, -50%)';
+    errorMessage.style.minWidth = '300px';
+    errorMessage.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+    errorMessage.role = 'alert';
+    errorMessage.innerHTML = `
+      保存出错: ${error.message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.body.appendChild(errorMessage);
+    
+    // 设置定时关闭消息
+    setTimeout(() => {
+      if (document.body.contains(errorMessage)) {
+        errorMessage.remove();
+      }
+    }, 3000);
+  });
+}
+
+function saveServerEdit() {
+  const form = document.getElementById('editServerForm');
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+  
+  // 创建居中显示的加载消息
+  const loadingMessage = document.createElement('div');
+  loadingMessage.id = 'saveMessage';
+  loadingMessage.className = 'alert alert-info alert-dismissible fade show position-fixed';
+  loadingMessage.style.zIndex = '1060';
+  loadingMessage.style.top = '50%';
+  loadingMessage.style.left = '50%';
+  loadingMessage.style.transform = 'translate(-50%, -50%)';
+  loadingMessage.style.minWidth = '300px';
+  loadingMessage.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+  loadingMessage.role = 'alert';
+  loadingMessage.innerHTML = `
+    正在保存服务器设置...
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  `;
+  document.body.appendChild(loadingMessage);
+  
+  fetch('/api/dns-security/update-server', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(result => {
+    // 移除加载消息
+    if (document.getElementById('saveMessage')) {
+      document.getElementById('saveMessage').remove();
+    }
+    
+    if (result.success) {
+      // 关闭模态框
+      closeEditModal();
+      
+      // 直接刷新页面，不显示成功消息
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+    } else {
+      // 创建错误消息
+      const errorMessage = document.createElement('div');
+      errorMessage.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+      errorMessage.style.zIndex = '1060';
+      errorMessage.style.top = '50%';
+      errorMessage.style.left = '50%';
+      errorMessage.style.transform = 'translate(-50%, -50%)';
+      errorMessage.style.minWidth = '300px';
+      errorMessage.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+      errorMessage.role = 'alert';
+      errorMessage.innerHTML = `
+        保存失败: ${result.message || '未知错误'}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      document.body.appendChild(errorMessage);
+      
+      // 设置定时关闭消息
+      setTimeout(() => {
+        if (document.body.contains(errorMessage)) {
+          errorMessage.remove();
+        }
+      }, 3000);
+    }
+  })
+  .catch(error => {
+    // 移除加载消息
+    if (document.getElementById('saveMessage')) {
+      document.getElementById('saveMessage').remove();
+    }
+    
+    // 创建错误消息
+    const errorMessage = document.createElement('div');
+    errorMessage.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+    errorMessage.style.zIndex = '1060';
+    errorMessage.style.top = '50%';
+    errorMessage.style.left = '50%';
+    errorMessage.style.transform = 'translate(-50%, -50%)';
+    errorMessage.style.minWidth = '300px';
+    errorMessage.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+    errorMessage.role = 'alert';
+    errorMessage.innerHTML = `
+      保存出错: ${error.message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.body.appendChild(errorMessage);
+    
+    // 设置定时关闭消息
+      setTimeout(() => {
+      if (document.body.contains(errorMessage)) {
+        errorMessage.remove();
+      }
+    }, 3000);
+  });
+}
+
+function saveFallbackOrder() {
+  // 获取所有回退协议选择框
+  const fallbackProtocols = Array.from(document.querySelectorAll('.fallback-protocol')).map(select => select.value);
+  
+  // 创建居中显示的加载消息
+  const loadingMessage = document.createElement('div');
+  loadingMessage.id = 'saveMessage';
+  loadingMessage.className = 'alert alert-info alert-dismissible fade show position-fixed';
+  loadingMessage.style.zIndex = '1060';
+  loadingMessage.style.top = '50%';
+  loadingMessage.style.left = '50%';
+  loadingMessage.style.transform = 'translate(-50%, -50%)';
+  loadingMessage.style.minWidth = '300px';
+  loadingMessage.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+  loadingMessage.role = 'alert';
+  loadingMessage.innerHTML = `
+    正在保存回退顺序设置...
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  `;
+  document.body.appendChild(loadingMessage);
+  
+  fetch('/api/dns-security/update-fallback-order', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      fallbackOrder: fallbackProtocols
+    })
+  })
+  .then(response => response.json())
+  .then(result => {
+    // 移除加载消息
+    if (document.getElementById('saveMessage')) {
+      document.getElementById('saveMessage').remove();
+        }
+    
+    if (result.success) {
+      // 关闭模态框
+      closeFallbackOrderModal();
+      
+      // 更新页面上的回退顺序显示
+      document.getElementById('fallback-order').textContent = fallbackProtocols.join(', ');
+      
+      // 直接刷新页面
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+    } else {
+      // 创建错误消息
+      const errorMessage = document.createElement('div');
+      errorMessage.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+      errorMessage.style.zIndex = '1060';
+      errorMessage.style.top = '50%';
+      errorMessage.style.left = '50%';
+      errorMessage.style.transform = 'translate(-50%, -50%)';
+      errorMessage.style.minWidth = '300px';
+      errorMessage.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+      errorMessage.role = 'alert';
+      errorMessage.innerHTML = `
+        保存失败: ${result.message || '未知错误'}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      document.body.appendChild(errorMessage);
+      
+      // 设置定时关闭消息
+      setTimeout(() => {
+        if (document.body.contains(errorMessage)) {
+          errorMessage.remove();
+        }
+      }, 3000);
+    }
+  })
+  .catch(error => {
+    // 移除加载消息
+    if (document.getElementById('saveMessage')) {
+      document.getElementById('saveMessage').remove();
+    }
+    
+    // 创建错误消息
+    const errorMessage = document.createElement('div');
+    errorMessage.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+    errorMessage.style.zIndex = '1060';
+    errorMessage.style.top = '50%';
+    errorMessage.style.left = '50%';
+    errorMessage.style.transform = 'translate(-50%, -50%)';
+    errorMessage.style.minWidth = '300px';
+    errorMessage.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+    errorMessage.role = 'alert';
+    errorMessage.innerHTML = `
+      保存出错: ${error.message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.body.appendChild(errorMessage);
+    
+    // 设置定时关闭消息
+    setTimeout(() => {
+      if (document.body.contains(errorMessage)) {
+        errorMessage.remove();
+      }
+    }, 3000);
+  });
+}
+
+// 辅助函数：获取协议名称
+function getProtocolName(protocol) {
+  switch(protocol) {
+    case 'dot': return 'DNS over TLS';
+    case 'doh': return 'DNS over HTTPS';
+    case 'doq': return 'DNS over QUIC';
+    case 'standard': return '标准DNS';
+    case 'custom': return '自定义DNS';
+    default: return protocol;
+  }
+}
+
+// 全局辅助函数：显示提示信息
+function showAlert(message, type = 'info') {
+  // 创建警告元素
+  const alertDiv = document.createElement('div');
+  alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-50 start-50 translate-middle`;
+  alertDiv.style.zIndex = 1050;
+  alertDiv.style.maxWidth = '90%';
+  alertDiv.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+  alertDiv.style.minWidth = '300px';
+  alertDiv.role = 'alert';
+  
+  alertDiv.innerHTML = `
+    ${message}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  `;
+  
+  // 添加到文档
+  document.body.appendChild(alertDiv);
+  
+  // 设置自动关闭
+  setTimeout(() => {
+    const bsAlert = new bootstrap.Alert(alertDiv);
+    bsAlert.close();
+  }, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // 协议开关处理
+  document.querySelectorAll('.protocol-switch').forEach(switchElem => {
+    switchElem.addEventListener('change', async function() {
+      const protocol = this.dataset.protocol;
+      const enabled = this.checked;
+      
+      try {
+        // 显示操作中提示
+        showAlert(`正在${enabled ? '启用' : '禁用'} ${getProtocolName(protocol)} 协议...`, 'info');
+        
+        const response = await fetch('/api/dns-security/toggle-protocol', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            protocol,
+            enable: enabled
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // 更新UI状态
+          const statusElem = document.querySelector(`#${protocol}-status .badge`);
+          if (enabled) {
+            statusElem.className = 'badge bg-success me-2';
+            statusElem.textContent = '已启用';
+          } else {
+            statusElem.className = 'badge bg-danger me-2';
+            statusElem.textContent = '未启用';
+          }
+          
+          showAlert(`${getProtocolName(protocol)} 协议${enabled ? '启用' : '禁用'}成功`, 'success');
+        } else {
+          // 恢复开关状态
+          this.checked = !enabled;
+          showAlert(`操作失败: ${result.message || '未知错误'}`, 'danger');
+        }
+      } catch (error) {
+        // 恢复开关状态
+        this.checked = !enabled;
+        showAlert(`操作出错: ${error.message}`, 'danger');
+      }
+    });
+  });
+  
+  // 编辑默认协议
+  document.getElementById('editDefaultProtocol').addEventListener('click', function() {
+    // 获取当前默认协议
+    const currentDefault = document.getElementById('default-protocol').textContent.trim();
+    
+    // 删除可能已存在的旧模态框
+    const oldModal = document.getElementById('editDefaultProtocolModal');
+    if (oldModal) {
+      oldModal.remove();
+    }
+    
+    // 创建编辑模态框HTML
+    const editModalHTML = `
+      <div id="editDefaultProtocolModal" class="modal-wrapper" style="position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1050; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.3s ease;">
+        <div class="modal-dialog" style="width:100%; max-width:500px; margin:0 20px; transform:translateY(-20px); transition:transform 0.3s ease;">
+          <div class="modal-content" style="border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.3); background-color:#ffffff;">
+            <div class="modal-header" style="border-bottom:1px solid #dee2e6; padding:1rem; display:flex; align-items:center; justify-content:space-between; background-color:#f8f9fa; border-top-left-radius:8px; border-top-right-radius:8px;">
+              <h5 class="modal-title" style="margin:0; font-weight:500; color:#212529; font-size:1.3rem;">编辑默认DNS协议</h5>
+              <button type="button" style="background:transparent; border:none; font-size:1.5rem; font-weight:700; line-height:1; cursor:pointer; padding:0.5rem; color:#000;" onclick="closeDefaultProtocolModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem; background-color:#ffffff;">
+              <form id="editDefaultProtocolForm">
+                <div class="mb-4">
+                  <label for="defaultProtocol" class="form-label">默认DNS协议</label>
+                  <select class="form-select" id="defaultProtocol" name="defaultProtocol" style="height:50px; padding-top:10px; padding-bottom:10px;">
+                    <option value="standard" ${currentDefault === 'standard' ? 'selected' : ''}>标准DNS</option>
+                    <option value="dot" ${currentDefault === 'dot' ? 'selected' : ''}>DNS over TLS (DoT)</option>
+                    <option value="doh" ${currentDefault === 'doh' ? 'selected' : ''}>DNS over HTTPS (DoH)</option>
+                    <option value="doq" ${currentDefault === 'doq' ? 'selected' : ''}>DNS over QUIC (DoQ)</option>
+                  </select>
+                  <div class="form-text mt-2">
+                    选择系统默认使用的DNS解析协议。
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #dee2e6; padding:1.2rem; display:flex; align-items:center; justify-content:flex-end; background-color:#f8f9fa; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+              <button type="button" class="btn btn-secondary" style="padding:0.5rem 1.5rem; color:white; background-color:#6c757d; border:1px solid #6c757d; border-radius:0.25rem; cursor:pointer; margin-right:0.8rem;" onclick="closeDefaultProtocolModal()">取消</button>
+              <button type="button" class="btn btn-primary" style="padding:0.5rem 1.5rem; color:white; background-color:#0d6efd; border:1px solid #0d6efd; border-radius:0.25rem; cursor:pointer;" onclick="saveDefaultProtocol()">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // 将模态框添加到DOM
+    document.body.insertAdjacentHTML('beforeend', editModalHTML);
+    
+    // 显示模态框（添加淡入效果）
+    setTimeout(() => {
+      const modal = document.getElementById('editDefaultProtocolModal');
+      if (modal) {
+        modal.style.opacity = '1';
+        const dialog = modal.querySelector('.modal-dialog');
+        if (dialog) {
+          dialog.style.transform = 'translateY(0)';
+        }
+      }
+    }, 10);
+    
+    // 阻止点击事件冒泡
+    document.querySelector('#editDefaultProtocolModal .modal-content').addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+    
+    // 点击背景关闭模态框
+    document.getElementById('editDefaultProtocolModal').addEventListener('click', function() {
+      closeDefaultProtocolModal();
+    });
+  });
+  
+  // 编辑回退顺序
+  document.getElementById('editFallbackOrder').addEventListener('click', function() {
+    // 获取当前回退顺序
+    const currentFallbackOrder = document.getElementById('fallback-order').textContent.trim().split(', ');
+    
+    // 删除可能已存在的旧模态框
+    const oldModal = document.getElementById('editFallbackOrderModal');
+    if (oldModal) {
+      oldModal.remove();
+    }
+    
+    // 创建编辑模态框HTML
+    const editModalHTML = `
+      <div id="editFallbackOrderModal" class="modal-wrapper" style="position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1050; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.3s ease;">
+        <div class="modal-dialog" style="width:100%; max-width:500px; margin:0 20px; transform:translateY(-20px); transition:transform 0.3s ease;">
+          <div class="modal-content" style="border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.3); background-color:#ffffff;">
+            <div class="modal-header" style="border-bottom:1px solid #dee2e6; padding:1rem; display:flex; align-items:center; justify-content:space-between; background-color:#f8f9fa; border-top-left-radius:8px; border-top-right-radius:8px;">
+              <h5 class="modal-title" style="margin:0; font-weight:500; color:#212529; font-size:1.3rem;">编辑DNS回退顺序</h5>
+              <button type="button" style="background:transparent; border:none; font-size:1.5rem; font-weight:700; line-height:1; cursor:pointer; padding:0.5rem; color:#000;" onclick="closeFallbackOrderModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem; background-color:#ffffff;">
+              <form id="editFallbackOrderForm">
+                <div class="mb-4">
+                  <label for="fallbackOrder" class="form-label">DNS回退顺序</label>
+                  <div id="fallbackOrderContainer" class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                      <span class="me-2">1.</span>
+                      <select class="form-select fallback-protocol" style="height:50px; padding-top:10px; padding-bottom:10px;">
+                        <option value="standard" ${currentFallbackOrder[0] === 'standard' ? 'selected' : ''}>标准DNS</option>
+                        <option value="dot" ${currentFallbackOrder[0] === 'dot' ? 'selected' : ''}>DNS over TLS (DoT)</option>
+                        <option value="doh" ${currentFallbackOrder[0] === 'doh' ? 'selected' : ''}>DNS over HTTPS (DoH)</option>
+                        <option value="doq" ${currentFallbackOrder[0] === 'doq' ? 'selected' : ''}>DNS over QUIC (DoQ)</option>
+                      </select>
+                    </div>
+                    ${currentFallbackOrder.slice(1).map((protocol, index) => `
+                      <div class="d-flex align-items-center mb-2">
+                        <span class="me-2">${index + 2}.</span>
+                        <select class="form-select fallback-protocol" style="height:50px; padding-top:10px; padding-bottom:10px;">
+                          <option value="standard" ${protocol === 'standard' ? 'selected' : ''}>标准DNS</option>
+                          <option value="dot" ${protocol === 'dot' ? 'selected' : ''}>DNS over TLS (DoT)</option>
+                          <option value="doh" ${protocol === 'doh' ? 'selected' : ''}>DNS over HTTPS (DoH)</option>
+                          <option value="doq" ${protocol === 'doq' ? 'selected' : ''}>DNS over QUIC (DoQ)</option>
+                        </select>
+                        <button type="button" class="btn btn-outline-danger ms-2 remove-fallback" style="min-width: 80px;">
+                          <i class="fas fa-times me-1"></i>移除
+                        </button>
+                      </div>
+                    `).join('')}
+                  </div>
+                  <button type="button" id="addFallbackProtocol" class="btn btn-outline-secondary">
+                    <i class="fas fa-plus"></i> 添加回退协议
+                  </button>
+                  <div class="form-text mt-2">
+                    设置DNS解析失败时的回退顺序。系统将按照此顺序尝试不同的协议进行解析。
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #dee2e6; padding:1.2rem; display:flex; align-items:center; justify-content:flex-end; background-color:#f8f9fa; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+              <button type="button" class="btn btn-secondary" style="padding:0.5rem 1.5rem; color:white; background-color:#6c757d; border:1px solid #6c757d; border-radius:0.25rem; cursor:pointer; margin-right:0.8rem;" onclick="closeFallbackOrderModal()">取消</button>
+              <button type="button" class="btn btn-primary" style="padding:0.5rem 1.5rem; color:white; background-color:#0d6efd; border:1px solid #0d6efd; border-radius:0.25rem; cursor:pointer;" onclick="saveFallbackOrder()">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // 将模态框添加到DOM
+    document.body.insertAdjacentHTML('beforeend', editModalHTML);
+    
+    // 显示模态框（添加淡入效果）
+    setTimeout(() => {
+      const modal = document.getElementById('editFallbackOrderModal');
+      if (modal) {
+        modal.style.opacity = '1';
+        const dialog = modal.querySelector('.modal-dialog');
+        if (dialog) {
+          dialog.style.transform = 'translateY(0)';
+        }
+        
+        // 添加事件监听器
+        // 添加回退协议按钮
+        document.getElementById('addFallbackProtocol').addEventListener('click', function() {
+          const container = document.getElementById('fallbackOrderContainer');
+          const protocolCount = container.querySelectorAll('.fallback-protocol').length;
+          
+          const newProtocolHTML = `
+            <div class="d-flex align-items-center mb-2">
+              <span class="me-2">${protocolCount + 1}.</span>
+              <select class="form-select fallback-protocol" style="height:50px; padding-top:10px; padding-bottom:10px;">
+                <option value="standard">标准DNS</option>
+                <option value="dot">DNS over TLS (DoT)</option>
+                <option value="doh">DNS over HTTPS (DoH)</option>
+                <option value="doq">DNS over QUIC (DoQ)</option>
+              </select>
+              <button type="button" class="btn btn-outline-danger ms-2 remove-fallback" style="min-width: 80px;">
+                <i class="fas fa-times me-1"></i>移除
+              </button>
+            </div>
+          `;
+          
+          container.insertAdjacentHTML('beforeend', newProtocolHTML);
+          
+          // 为新添加的移除按钮添加事件监听
+          const removeButtons = container.querySelectorAll('.remove-fallback');
+          const lastRemoveButton = removeButtons[removeButtons.length - 1];
+          lastRemoveButton.addEventListener('click', function() {
+            this.closest('.d-flex').remove();
+            // 重新编号
+            updateFallbackNumbers();
+          });
+        });
+        
+        // 为现有的移除按钮添加事件监听
+        document.querySelectorAll('.remove-fallback').forEach(button => {
+          button.addEventListener('click', function() {
+            this.closest('.d-flex').remove();
+            // 重新编号
+            updateFallbackNumbers();
+          });
+        });
+        
+        // 更新序号的函数
+        function updateFallbackNumbers() {
+          const container = document.getElementById('fallbackOrderContainer');
+          const items = container.querySelectorAll('.d-flex');
+          items.forEach((item, index) => {
+            item.querySelector('span').textContent = `${index + 1}.`;
+          });
+        }
+      }
+    }, 10);
+    
+    // 阻止点击事件冒泡
+    document.querySelector('#editFallbackOrderModal .modal-content').addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+    
+    // 点击背景关闭模态框
+    document.getElementById('editFallbackOrderModal').addEventListener('click', function() {
+      closeFallbackOrderModal();
+    });
+  });
+  
+  // 测试DoT服务器
+  document.querySelectorAll('.test-dot-server').forEach(button => {
+    button.addEventListener('click', async function() {
+      const host = this.dataset.host;
+      const port = this.dataset.port;
+      const servername = this.dataset.servername;
+      
+      // 创建测试模态窗口
+      const testModalHTML = `
+        <div id="testServerModal" class="modal-wrapper" style="position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1050; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.3s ease;">
+          <div class="modal-dialog" style="width:100%; max-width:500px; margin:0 20px; transform:translateY(-20px); transition:transform 0.3s ease;">
+            <div class="modal-content" style="border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.3); background-color:#ffffff;">
+              <div class="modal-header" style="border-bottom:1px solid #dee2e6; padding:1rem; display:flex; align-items:center; justify-content:space-between; background-color:#f8f9fa; border-top-left-radius:8px; border-top-right-radius:8px;">
+                <h5 class="modal-title" style="margin:0; font-weight:500; color:#212529;">测试DoT服务器连接</h5>
+                <button type="button" style="background:transparent; border:none; font-size:1.5rem; font-weight:700; line-height:1; cursor:pointer; padding:0.5rem; color:#000;" onclick="closeTestModal()">&times;</button>
+              </div>
+              <div class="modal-body" style="padding:1rem; background-color:#ffffff;">
+                <div class="mb-3">
+                  <p><strong>主机:</strong> ${host}</p>
+                  <p><strong>端口:</strong> ${port}</p>
+                  <p><strong>服务器名称:</strong> ${servername}</p>
+                </div>
+                <div id="test-result" class="alert alert-info">
+                  <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                      <span class="visually-hidden">正在测试...</span>
+                    </div>
+                    <span>正在测试连接，请稍候...</span>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer" style="border-top:1px solid #dee2e6; padding:1rem; display:flex; align-items:center; justify-content:flex-end; background-color:#f8f9fa; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+                <button type="button" class="btn btn-secondary" style="padding:0.375rem 0.75rem; color:white; background-color:#6c757d; border:1px solid #6c757d; border-radius:0.25rem; cursor:pointer;" onclick="closeTestModal()">关闭</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // 将模态框添加到DOM
+      document.body.insertAdjacentHTML('beforeend', testModalHTML);
+      
+      // 显示模态框（添加淡入效果）
+      setTimeout(() => {
+        const modal = document.getElementById('testServerModal');
+        if (modal) {
+          modal.style.opacity = '1';
+          const dialog = modal.querySelector('.modal-dialog');
+          if (dialog) {
+            dialog.style.transform = 'translateY(0)';
+          }
+        }
+      }, 10);
+      
+      // 执行测试
+      try {
+        const response = await fetch('/api/dns-security/test-connection', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            protocol: 'dot',
+            host,
+            port,
+            servername
+          })
+        });
+        
+        const result = await response.json();
+        const testResult = document.getElementById('test-result');
+        
+        if (result.success) {
+          testResult.className = 'alert alert-success';
+          testResult.innerHTML = `<i class="fas fa-check-circle me-2"></i> DoT服务器 ${host}:${port} 连接成功`;
+        } else {
+          testResult.className = 'alert alert-danger';
+          testResult.innerHTML = `<i class="fas fa-times-circle me-2"></i> DoT服务器 ${host}:${port} 连接失败: ${result.message || '未知错误'}`;
+        }
+      } catch (error) {
+        const testResult = document.getElementById('test-result');
+        testResult.className = 'alert alert-danger';
+        testResult.innerHTML = `<i class="fas fa-times-circle me-2"></i> 测试出错: ${error.message}`;
+      }
+    });
+  });
+  
+  // 测试DoH服务器
+  document.querySelectorAll('.test-doh-server').forEach(button => {
+    button.addEventListener('click', async function() {
+      const host = this.dataset.host;
+      const path = this.dataset.path;
+      
+      // 创建测试模态窗口
+      const testModalHTML = `
+        <div id="testServerModal" class="modal-wrapper" style="position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1050; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.3s ease;">
+          <div class="modal-dialog" style="width:100%; max-width:500px; margin:0 20px; transform:translateY(-20px); transition:transform 0.3s ease;">
+            <div class="modal-content" style="border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.3); background-color:#ffffff;">
+              <div class="modal-header" style="border-bottom:1px solid #dee2e6; padding:1rem; display:flex; align-items:center; justify-content:space-between; background-color:#f8f9fa; border-top-left-radius:8px; border-top-right-radius:8px;">
+                <h5 class="modal-title" style="margin:0; font-weight:500; color:#212529;">测试DoH服务器连接</h5>
+                <button type="button" style="background:transparent; border:none; font-size:1.5rem; font-weight:700; line-height:1; cursor:pointer; padding:0.5rem; color:#000;" onclick="closeTestModal()">&times;</button>
+              </div>
+              <div class="modal-body" style="padding:1rem; background-color:#ffffff;">
+                <div class="mb-3">
+                  <p><strong>主机:</strong> ${host}</p>
+                  <p><strong>路径:</strong> ${path}</p>
+                </div>
+                <div id="test-result" class="alert alert-info">
+                  <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                      <span class="visually-hidden">正在测试...</span>
+                    </div>
+                    <span>正在测试连接，请稍候...</span>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer" style="border-top:1px solid #dee2e6; padding:1rem; display:flex; align-items:center; justify-content:flex-end; background-color:#f8f9fa; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+                <button type="button" class="btn btn-secondary" style="padding:0.375rem 0.75rem; color:white; background-color:#6c757d; border:1px solid #6c757d; border-radius:0.25rem; cursor:pointer;" onclick="closeTestModal()">关闭</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // 将模态框添加到DOM
+      document.body.insertAdjacentHTML('beforeend', testModalHTML);
+      
+      // 显示模态框（添加淡入效果）
+      setTimeout(() => {
+        const modal = document.getElementById('testServerModal');
+        if (modal) {
+          modal.style.opacity = '1';
+          const dialog = modal.querySelector('.modal-dialog');
+          if (dialog) {
+            dialog.style.transform = 'translateY(0)';
+          }
+        }
+      }, 10);
+      
+      // 执行测试
+      try {
+        const response = await fetch('/api/dns-security/test-connection', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            protocol: 'doh',
+            host,
+            path
+          })
+        });
+        
+        const result = await response.json();
+        const testResult = document.getElementById('test-result');
+        
+        if (result.success) {
+          testResult.className = 'alert alert-success';
+          testResult.innerHTML = `<i class="fas fa-check-circle me-2"></i> DoH服务器 ${host}${path} 连接成功`;
+        } else {
+          testResult.className = 'alert alert-danger';
+          testResult.innerHTML = `<i class="fas fa-times-circle me-2"></i> DoH服务器 ${host}${path} 连接失败: ${result.message || '未知错误'}`;
+        }
+      } catch (error) {
+        const testResult = document.getElementById('test-result');
+        testResult.className = 'alert alert-danger';
+        testResult.innerHTML = `<i class="fas fa-times-circle me-2"></i> 测试出错: ${error.message}`;
+      }
+    });
+  });
+  
+  // 测试DoQ服务器
+  document.querySelectorAll('.test-doq-server').forEach(button => {
+    button.addEventListener('click', async function() {
+      const host = this.dataset.host;
+      const port = this.dataset.port;
+      
+      // 创建测试模态窗口
+      const testModalHTML = `
+        <div id="testServerModal" class="modal-wrapper" style="position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1050; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.3s ease;">
+          <div class="modal-dialog" style="width:100%; max-width:500px; margin:0 20px; transform:translateY(-20px); transition:transform 0.3s ease;">
+            <div class="modal-content" style="border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.3); background-color:#ffffff;">
+              <div class="modal-header" style="border-bottom:1px solid #dee2e6; padding:1rem; display:flex; align-items:center; justify-content:space-between; background-color:#f8f9fa; border-top-left-radius:8px; border-top-right-radius:8px;">
+                <h5 class="modal-title" style="margin:0; font-weight:500; color:#212529;">测试DoQ服务器连接</h5>
+                <button type="button" style="background:transparent; border:none; font-size:1.5rem; font-weight:700; line-height:1; cursor:pointer; padding:0.5rem; color:#000;" onclick="closeTestModal()">&times;</button>
+              </div>
+              <div class="modal-body" style="padding:1rem; background-color:#ffffff;">
+                <div class="mb-3">
+                  <p><strong>主机:</strong> ${host}</p>
+                  <p><strong>端口:</strong> ${port}</p>
+                </div>
+                <div id="test-result" class="alert alert-info">
+                  <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                      <span class="visually-hidden">正在测试...</span>
+                    </div>
+                    <span>正在测试连接，请稍候...</span>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer" style="border-top:1px solid #dee2e6; padding:1rem; display:flex; align-items:center; justify-content:flex-end; background-color:#f8f9fa; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+                <button type="button" class="btn btn-secondary" style="padding:0.375rem 0.75rem; color:white; background-color:#6c757d; border:1px solid #6c757d; border-radius:0.25rem; cursor:pointer;" onclick="closeTestModal()">关闭</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // 将模态框添加到DOM
+      document.body.insertAdjacentHTML('beforeend', testModalHTML);
+      
+      // 显示模态框（添加淡入效果）
+      setTimeout(() => {
+        const modal = document.getElementById('testServerModal');
+        if (modal) {
+          modal.style.opacity = '1';
+          const dialog = modal.querySelector('.modal-dialog');
+          if (dialog) {
+            dialog.style.transform = 'translateY(0)';
+          }
+        }
+      }, 10);
+      
+      // 执行测试
+      try {
+        const response = await fetch('/api/dns-security/test-connection', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            protocol: 'doq',
+            host,
+            port
+          })
+        });
+        
+        const result = await response.json();
+        const testResult = document.getElementById('test-result');
+        
+        if (result.success) {
+          testResult.className = 'alert alert-success';
+          testResult.innerHTML = `<i class="fas fa-check-circle me-2"></i> DoQ服务器 ${host}:${port} 连接${result.data && result.data.available ? '成功' : '不可用'}`;
+        } else {
+          testResult.className = 'alert alert-danger';
+          testResult.innerHTML = `<i class="fas fa-times-circle me-2"></i> DoQ服务器 ${host}:${port} 连接失败: ${result.message || '未知错误'}`;
+        }
+      } catch (error) {
+        const testResult = document.getElementById('test-result');
+        testResult.className = 'alert alert-danger';
+        testResult.innerHTML = `<i class="fas fa-times-circle me-2"></i> 测试出错: ${error.message}`;
+      }
+    });
+  });
+  
+  // 显示DoT服务器编辑模态框
+  document.querySelectorAll('.edit-dot-server').forEach(button => {
+    button.addEventListener('click', function() {
+      const host = this.dataset.host;
+      const port = this.dataset.port;
+      const servername = this.dataset.servername;
+      const priority = this.dataset.priority;
+      
+      // 删除可能已存在的旧模态框
+      const oldModal = document.getElementById('editServerModal');
+      if (oldModal) {
+        oldModal.remove();
+      }
+      
+      // 创建编辑模态框HTML
+      const editModalHTML = `
+        <div id="editServerModal" class="modal-wrapper" style="position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1050; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.3s ease;">
+          <div class="modal-dialog" style="width:100%; max-width:500px; margin:0 20px; transform:translateY(-20px); transition:transform 0.3s ease;">
+            <div class="modal-content" style="border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.3); background-color:#ffffff;">
+              <div class="modal-header" style="border-bottom:1px solid #dee2e6; padding:1rem; display:flex; align-items:center; justify-content:space-between; background-color:#f8f9fa; border-top-left-radius:8px; border-top-right-radius:8px;">
+                <h5 class="modal-title" style="margin:0; font-weight:500; color:#212529;">编辑DoT服务器: ${host}</h5>
+                <button type="button" style="background:transparent; border:none; font-size:1.5rem; font-weight:700; line-height:1; cursor:pointer; padding:0.5rem; color:#000;" onclick="closeEditModal()">&times;</button>
+              </div>
+              <div class="modal-body" style="padding:1rem; background-color:#ffffff;">
+                <form id="editServerForm">
+                  <input type="hidden" name="protocol" value="dot">
+                  <input type="hidden" name="originalHost" value="${host}">
+                  <div class="mb-3">
+                    <label for="host" class="form-label">主机</label>
+                    <input type="text" class="form-control" id="host" name="host" value="${host}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="port" class="form-label">端口</label>
+                    <input type="number" class="form-control" id="port" name="port" value="${port}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="servername" class="form-label">服务器名称</label>
+                    <input type="text" class="form-control" id="servername" name="servername" value="${servername}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="priority" class="form-label">优先级</label>
+                    <input type="number" class="form-control" id="priority" name="priority" value="${priority}" required>
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer" style="border-top:1px solid #dee2e6; padding:1rem; display:flex; align-items:center; justify-content:flex-end; background-color:#f8f9fa; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+                <button type="button" class="btn btn-secondary btn-fixed-width" style="padding:0.375rem 0.75rem; color:white; background-color:#6c757d; border:1px solid #6c757d; border-radius:0.25rem; cursor:pointer; margin-right:0.5rem;" onclick="closeEditModal()">取消</button>
+                <button type="button" class="btn btn-primary btn-fixed-width" style="padding:0.375rem 0.75rem; color:white; background-color:#0d6efd; border:1px solid #0d6efd; border-radius:0.25rem; cursor:pointer;" onclick="saveServerEdit()">保存</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // 将模态框添加到DOM
+      document.body.insertAdjacentHTML('beforeend', editModalHTML);
+      
+      // 显示模态框（添加淡入效果）
+      setTimeout(() => {
+        const modal = document.getElementById('editServerModal');
+        if (modal) {
+          modal.style.opacity = '1';
+          const dialog = modal.querySelector('.modal-dialog');
+          if (dialog) {
+            dialog.style.transform = 'translateY(0)';
+          }
+        }
+      }, 10);
+      
+      // 阻止点击事件冒泡
+      document.querySelector('#editServerModal .modal-content').addEventListener('click', function(e) {
+        e.stopPropagation();
+      });
+      
+      // 点击背景关闭模态框
+      document.getElementById('editServerModal').addEventListener('click', function() {
+        closeEditModal();
+      });
+      
+      // 阻止表单提交
+      document.getElementById('editServerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+      });
+    });
+  });
+  
+  // 显示DoH服务器编辑模态框
+  document.querySelectorAll('.edit-doh-server').forEach(button => {
+    button.addEventListener('click', function() {
+      const host = this.dataset.host;
+      const path = this.dataset.path;
+      const method = this.dataset.method || 'GET';
+      const protocol = this.dataset.protocol || 'https';
+      const priority = this.dataset.priority;
+      
+      // 删除可能已存在的旧模态框
+      const oldModal = document.getElementById('editServerModal');
+      if (oldModal) {
+        oldModal.remove();
+      }
+      
+      // 创建编辑模态框HTML
+      const editModalHTML = `
+        <div id="editServerModal" class="modal-wrapper" style="position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1050; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.3s ease;">
+          <div class="modal-dialog" style="width:100%; max-width:500px; margin:0 20px; transform:translateY(-20px); transition:transform 0.3s ease;">
+            <div class="modal-content" style="border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.3); background-color:#ffffff;">
+              <div class="modal-header" style="border-bottom:1px solid #dee2e6; padding:1rem; display:flex; align-items:center; justify-content:space-between; background-color:#f8f9fa; border-top-left-radius:8px; border-top-right-radius:8px;">
+                <h5 class="modal-title" style="margin:0; font-weight:500; color:#212529;">编辑DoH服务器: ${host}</h5>
+                <button type="button" style="background:transparent; border:none; font-size:1.5rem; font-weight:700; line-height:1; cursor:pointer; padding:0.5rem; color:#000;" onclick="closeEditModal()">&times;</button>
+              </div>
+              <div class="modal-body" style="padding:1rem; background-color:#ffffff;">
+                <form id="editServerForm">
+                  <input type="hidden" name="protocol" value="doh">
+                  <input type="hidden" name="originalHost" value="${host}">
+                  <div class="mb-3">
+                    <label for="host" class="form-label">主机</label>
+                    <input type="text" class="form-control" id="host" name="host" value="${host}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="path" class="form-label">路径</label>
+                    <input type="text" class="form-control" id="path" name="path" value="${path}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="method" class="form-label">方法</label>
+                    <select class="form-select" id="method" name="method">
+                      <option value="GET" ${method === 'GET' ? 'selected' : ''}>GET</option>
+                      <option value="POST" ${method === 'POST' ? 'selected' : ''}>POST</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="httpProtocol" class="form-label">协议</label>
+                    <select class="form-select" id="httpProtocol" name="httpProtocol">
+                      <option value="http" ${protocol === 'http' ? 'selected' : ''}>HTTP</option>
+                      <option value="https" ${protocol === 'https' ? 'selected' : ''}>HTTPS</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="priority" class="form-label">优先级</label>
+                    <input type="number" class="form-control" id="priority" name="priority" value="${priority}" required>
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer" style="border-top:1px solid #dee2e6; padding:1rem; display:flex; align-items:center; justify-content:flex-end; background-color:#f8f9fa; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+                <button type="button" class="btn btn-secondary btn-fixed-width" style="padding:0.375rem 0.75rem; color:white; background-color:#6c757d; border:1px solid #6c757d; border-radius:0.25rem; cursor:pointer; margin-right:0.5rem;" onclick="closeEditModal()">取消</button>
+                <button type="button" class="btn btn-primary btn-fixed-width" style="padding:0.375rem 0.75rem; color:white; background-color:#0d6efd; border:1px solid #0d6efd; border-radius:0.25rem; cursor:pointer;" onclick="saveServerEdit()">保存</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // 将模态框添加到DOM
+      document.body.insertAdjacentHTML('beforeend', editModalHTML);
+      
+      // 显示模态框（添加淡入效果）
+      setTimeout(() => {
+        const modal = document.getElementById('editServerModal');
+        if (modal) {
+          modal.style.opacity = '1';
+          const dialog = modal.querySelector('.modal-dialog');
+          if (dialog) {
+            dialog.style.transform = 'translateY(0)';
+          }
+        }
+      }, 10);
+      
+      // 阻止点击事件冒泡
+      document.querySelector('#editServerModal .modal-content').addEventListener('click', function(e) {
+        e.stopPropagation();
+      });
+      
+      // 点击背景关闭模态框
+      document.getElementById('editServerModal').addEventListener('click', function() {
+        closeEditModal();
+      });
+      
+      // 阻止表单提交
+      document.getElementById('editServerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+      });
+    });
+  });
+  
+  // 显示DoQ服务器编辑模态框
+  document.querySelectorAll('.edit-doq-server').forEach(button => {
+    button.addEventListener('click', function() {
+      const host = this.dataset.host;
+      const port = this.dataset.port;
+      const priority = this.dataset.priority;
+      
+      // 删除可能已存在的旧模态框
+      const oldModal = document.getElementById('editServerModal');
+      if (oldModal) {
+        oldModal.remove();
+      }
+      
+      // 创建编辑模态框HTML
+      const editModalHTML = `
+        <div id="editServerModal" class="modal-wrapper" style="position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1050; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.3s ease;">
+          <div class="modal-dialog" style="width:100%; max-width:500px; margin:0 20px; transform:translateY(-20px); transition:transform 0.3s ease;">
+            <div class="modal-content" style="border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.3); background-color:#ffffff;">
+              <div class="modal-header" style="border-bottom:1px solid #dee2e6; padding:1rem; display:flex; align-items:center; justify-content:space-between; background-color:#f8f9fa; border-top-left-radius:8px; border-top-right-radius:8px;">
+                <h5 class="modal-title" style="margin:0; font-weight:500; color:#212529;">编辑DoQ服务器: ${host}</h5>
+                <button type="button" style="background:transparent; border:none; font-size:1.5rem; font-weight:700; line-height:1; cursor:pointer; padding:0.5rem; color:#000;" onclick="closeEditModal()">&times;</button>
+              </div>
+              <div class="modal-body" style="padding:1rem; background-color:#ffffff;">
+                <form id="editServerForm">
+                  <input type="hidden" name="protocol" value="doq">
+                  <input type="hidden" name="originalHost" value="${host}">
+                  <div class="mb-3">
+                    <label for="host" class="form-label">主机</label>
+                    <input type="text" class="form-control" id="host" name="host" value="${host}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="port" class="form-label">端口</label>
+                    <input type="number" class="form-control" id="port" name="port" value="${port}" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="priority" class="form-label">优先级</label>
+                    <input type="number" class="form-control" id="priority" name="priority" value="${priority}" required>
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer" style="border-top:1px solid #dee2e6; padding:1rem; display:flex; align-items:center; justify-content:flex-end; background-color:#f8f9fa; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+                <button type="button" class="btn btn-secondary btn-fixed-width" style="padding:0.375rem 0.75rem; color:white; background-color:#6c757d; border:1px solid #6c757d; border-radius:0.25rem; cursor:pointer; margin-right:0.5rem;" onclick="closeEditModal()">取消</button>
+                <button type="button" class="btn btn-primary btn-fixed-width" style="padding:0.375rem 0.75rem; color:white; background-color:#0d6efd; border:1px solid #0d6efd; border-radius:0.25rem; cursor:pointer;" onclick="saveServerEdit()">保存</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // 将模态框添加到DOM
+      document.body.insertAdjacentHTML('beforeend', editModalHTML);
+      
+      // 显示模态框（添加淡入效果）
+      setTimeout(() => {
+        const modal = document.getElementById('editServerModal');
+        if (modal) {
+          modal.style.opacity = '1';
+          const dialog = modal.querySelector('.modal-dialog');
+          if (dialog) {
+            dialog.style.transform = 'translateY(0)';
+          }
+        }
+      }, 10);
+      
+      // 阻止点击事件冒泡
+      document.querySelector('#editServerModal .modal-content').addEventListener('click', function(e) {
+        e.stopPropagation();
+      });
+      
+      // 点击背景关闭模态框
+      document.getElementById('editServerModal').addEventListener('click', function() {
+        closeEditModal();
+      });
+      
+      // 阻止表单提交
+      document.getElementById('editServerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+      });
+    });
+  });
+});
+</script>
+
+<style>
+.dns-test-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.dns-test-header {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: #e7f1ff;
+  color: #0d6efd;
+}
+
+.table th {
+  background-color: #f8f9fa;
+}
+
+/* 编辑按钮样式 */
+.btn-group-custom {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-fixed-width {
+  width: 80px;
+  text-align: center;
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 5px;
+}
+
+.btn-fixed-width i {
+  margin-right: 4px;
+}
+</style> 
