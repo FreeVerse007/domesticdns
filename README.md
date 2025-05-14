@@ -4,10 +4,10 @@
 ![Framework: Koa2](https://img.shields.io/badge/Framework-Koa2-blue.svg)
 ![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-orange.svg)
 
-##项目概览
+## 项目概览
 DomesticDNS是一个基于Koa2框架构建的DNS解析器服务，提供了全面的DNS功能和Web管理界面。这是一个功能丰富的DNS服务器，支持多种DNS协议，包括标准DNS、DNS over TLS (DoT)、DNS over HTTPS (DoH)和DNS over QUIC (DoQ)。
 
-##核心技术栈
+## 核心技术栈
 后端框架: Koa2 (Node.js)
 模板引擎: EJS
 DNS处理: dns2、native-dns、node-dns等库
